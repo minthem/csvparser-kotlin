@@ -98,7 +98,7 @@ class TokenizerTest {
     fun testUnclosedQuote() {
         val tokenizer = Tokenizer()
         val input = "\"abc,def" // クオートが閉じられていない
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }
@@ -107,7 +107,7 @@ class TokenizerTest {
     fun testQuoteStartsInMiddleOfCell() {
         val tokenizer = Tokenizer()
         val input = "abc\"def\",ghi" // セル途中でクオート開始
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }
@@ -116,7 +116,7 @@ class TokenizerTest {
     fun testUnescapedQuoteInsideQuotedCell() {
         val tokenizer = Tokenizer()
         val input = "\"abc \" def\"" // クオート内に単独の `"`
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }
@@ -125,7 +125,7 @@ class TokenizerTest {
     fun testNewlineInsideUnclosedQuote() {
         val tokenizer = Tokenizer()
         val input = "\"abc\ndef" // 改行を含むが閉じクオートなし
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }

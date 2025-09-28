@@ -8,23 +8,31 @@ internal class Tokenizer(
     fun tokenize(line: String): List<String?> {
         val context = Context(delimiter, quote)
         var state = State.START
-
         var index = 0
-        while (index < line.length) {
-            val ch = line[index]
-            state = state.action(ch, context)
-            index++
+
+        try {
+            while (index < line.length) {
+                val ch = line[index]
+                state = state.action(ch, context)
+                index++
+            }
+
+            if (state == State.IN_QUOTE_FIELD) {
+                throw IllegalArgumentException("Unclosed quoted field")
+            }
+
+            context.endToken()
+
+            return context.result()
+        } catch (e: IllegalArgumentException) {
+            throw CsvFormatInternalException(
+                e.message, index + 1
+            )
         }
-
-        if (state == State.IN_QUOTE_FIELD) {
-            throw IllegalArgumentException("Unclosed quoted field")
-        }
-
-        context.endToken()
-
-        return context.result();
     }
 }
+
+internal class CsvFormatInternalException(message: String?, val position: Int) : RuntimeException(message)
 
 private class Context(
     val delimiter: Char, val quote: Char,
@@ -56,7 +64,7 @@ private class Context(
     fun addChar(ch: Char) {
         sb.append(ch)
     }
-};
+}
 
 private enum class State {
 
@@ -134,4 +142,4 @@ private enum class State {
     };
 
     abstract fun action(char: Char, ctx: Context): State
-};
+}
