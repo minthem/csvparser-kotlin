@@ -12,6 +12,8 @@ data class CsvConfig(
 data class ReaderConfig(
     val skipRows: Int = 0,
     val hasHeader: Boolean = true,
+    val ignoreBlankLine: Boolean = false,
+    val skipInvalidLine: Boolean = false,
 )
 
 data class WriterConfig(

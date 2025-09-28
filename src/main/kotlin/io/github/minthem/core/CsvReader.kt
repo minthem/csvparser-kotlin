@@ -2,6 +2,7 @@ package io.github.minthem.core
 
 import io.github.minthem.config.CsvConfig
 import io.github.minthem.config.ReaderConfig
+import io.github.minthem.exception.CsvException
 import io.github.minthem.exception.CsvFormatException
 import io.github.minthem.exception.CsvLineFormatException
 import java.io.Reader
@@ -24,29 +25,47 @@ class CsvReader(
     override fun iterator(): Iterator<Row> {
         init()
 
-        val sequence = generateSequence {
-            readLine()
-        }.map { line ->
-            val cells: List<String?>
-            val lineNo = currentReadLineNum
-            try {
-                cells = tokenizer.tokenize(line)
-            } catch (e: CsvFormatInternalException) {
-                throw CsvFormatException(e.message ?: "Invalid CSV(TSV) Format", lineNo, e.position)
-            }
+        val sequence = sequence {
+            inner@while (true) {
+                val line = readLine() ?: break
+                val lineNo = currentReadLineNum
 
-            header?.let {
-                if (it.size != cells.size) {
-                    throw CsvLineFormatException(
-                        "Column count mismatch: header has ${it.size} columns but data row has ${cells.size} columns",
-                        lineNo
-                    )
+                if (line.isBlank()) {
+                    if (readConfig.ignoreBlankLine) {
+                        continue
+                    } else {
+                        throw CsvLineFormatException(
+                            "Blank line encountered but ignoreBlankLine=false",
+                            lineNo
+                        )
+                    }
+                }
+                try {
+                    val cells = try {
+                        tokenizer.tokenize(line)
+                    } catch (e: CsvFormatInternalException) {
+                        throw CsvFormatException(e.message ?: "Invalid CSV(TSV) Format", lineNo, e.position)
+                    }
+
+                    header?.let {
+                        if (it.size != cells.size) {
+                            throw CsvLineFormatException(
+                                "Column count mismatch: header has ${it.size} columns but data row has ${cells.size} columns",
+                                lineNo
+                            )
+                        }
+                    }
+
+                    yield(Row(cells, headerMap))
+
+                } catch (ce: CsvException) {
+                    if(readConfig.skipInvalidLine) {
+                        //TODO output warning log
+                        continue@inner
+                    }
+                    throw ce
                 }
             }
-
-            cells
-        }.map {
-            Row(it, headerMap)
         }
 
         return sequence.iterator()

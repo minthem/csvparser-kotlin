@@ -133,6 +133,38 @@ class CsvReaderTest {
     }
 
     @Test
+    fun `should parse quoted field containing double quotes in CSV`() {
+        val csv = "name,comment\nAlice,\"She said \"\"Hello\"\"\""
+
+        val reader = CsvReader(
+            StringReader(csv),
+            CsvConfig(delimiter = ','),
+            ReaderConfig(hasHeader = true)
+        )
+
+        reader.header() shouldBe listOf("name", "comment")
+
+        val rows = reader.toList()
+        rows[0]["name"] shouldBe "Alice"
+        rows[0]["comment"] shouldBe "She said \"Hello\""
+    }
+
+    @Test
+    fun `should throw CsvFormatException when quoted field is not closed in CSV`() {
+        val csv = "name,comment\nAlice,\"Unclosed comment"
+
+        val reader = CsvReader(
+            StringReader(csv),
+            CsvConfig(delimiter = ','),
+            ReaderConfig(hasHeader = true)
+        )
+
+        shouldThrow<CsvFormatException> {
+            reader.toList()
+        }
+    }
+
+    @Test
     fun `should read TSV with header correctly`() {
         val tsv = """
         name\tage\tcity
@@ -193,13 +225,13 @@ class CsvReaderTest {
             iter.next() // mismatch
         }
     }
-    
+
     @Test
     fun `should parse quoted field containing tab as single cell in TSV`() {
         val tsv = """
-        name\tcity
-        Alice\t"Tokyo\tJapan"
-    """.trimIndent().replace("\\t", "\t")
+            name\tcity
+            Alice\t"Tokyo\tJapan"
+        """.trimIndent().replace("\\t", "\t")
 
         val reader = CsvReader(
             StringReader(tsv),
@@ -212,6 +244,151 @@ class CsvReaderTest {
         val rows = reader.toList()
         rows[0]["name"] shouldBe "Alice"
         rows[0]["city"] shouldBe "Tokyo\tJapan" // タブを含んでも1セル
+    }
+
+    @Test
+    fun `should parse quoted field containing double quotes in TSV`() {
+        val tsv = "name\tcomment\nAlice\t\"She said \"\"Hello\"\"\""
+
+        val reader = CsvReader(
+            StringReader(tsv),
+            CsvConfig(delimiter = '\t'),
+            ReaderConfig(hasHeader = true)
+        )
+
+        reader.header() shouldBe listOf("name", "comment")
+
+        val rows = reader.toList()
+        rows[0]["name"] shouldBe "Alice"
+        rows[0]["comment"] shouldBe "She said \"Hello\""
+    }
+
+    @Test
+    fun `should throw CsvFormatException when quoted field is not closed in TSV`() {
+        val tsv = "name\tcomment\nAlice\t\"Unclosed comment"
+
+        val reader = CsvReader(
+            StringReader(tsv),
+            CsvConfig(delimiter = '\t'),
+            ReaderConfig(hasHeader = true)
+        )
+
+        shouldThrow<CsvFormatException> {
+            reader.toList()
+        }
+    }
+
+    @Test
+    fun `should return empty when file is empty and no header`() {
+        val reader = CsvReader(StringReader(""), CsvConfig(), ReaderConfig(hasHeader = false))
+        reader.header() shouldBe null
+        reader.toList() shouldBe emptyList()
+    }
+
+    @Test
+    fun `should throw when file is empty but header expected`() {
+        val reader = CsvReader(StringReader(""), CsvConfig(), ReaderConfig(hasHeader = true))
+        shouldThrow<CsvLineFormatException> {
+            reader.header()
+        }
+    }
+
+    @Test
+    fun `should throw when blank line encountered and ignoreBlankLine is false with header`() {
+        val csv = "name,age\nAlice,30\n\nBob,25"
+        val reader = CsvReader(StringReader(csv), CsvConfig(), ReaderConfig(hasHeader = true, ignoreBlankLine = false))
+        val iter = reader.iterator()
+        iter.next() // Alice,30
+        shouldThrow<CsvLineFormatException> {
+            iter.next() // 空行でエラー
+        }
+    }
+
+    @Test
+    fun `should skip blank line when ignoreBlankLine is true`() {
+        val csv = "name,age\nAlice,30\n\nBob,25"
+        val reader = CsvReader(StringReader(csv), CsvConfig(), ReaderConfig(hasHeader = true, ignoreBlankLine = true))
+        val rows = reader.toList()
+        rows.size shouldBe 2
+        rows[0]["name"] shouldBe "Alice"
+        rows[1]["name"] shouldBe "Bob"
+    }
+
+
+    @Test
+    fun `should parse quoted field containing newline`() {
+        val csv = "name,comment\nAlice,\"Hello\nWorld\""
+        val reader = CsvReader(StringReader(csv), CsvConfig(), ReaderConfig(hasHeader = true))
+
+        val row = reader.toList()[0]
+        row["comment"] shouldBe "Hello\nWorld"
+    }
+
+    @Test
+    fun `should throw on invalid quoted field when skipInvalidLine is false`() {
+        val csv = """
+        name,age
+        Alice,30
+        "Bob,"25
+        Carol,40
+    """.trimIndent() // Bob行がクオート閉じ忘れ
+
+        val reader = CsvReader(
+            StringReader(csv),
+            CsvConfig(),
+            ReaderConfig(hasHeader = true, skipInvalidLine = false)
+        )
+
+        shouldThrow<CsvFormatException> {
+            reader.toList()
+        }
+    }
+
+    @Test
+    fun `should skip invalid line when skipInvalidLine is true`() {
+        val csv = """
+        name,age
+        Alice,30
+        "Bob,"25
+        Carol,40
+    """.trimIndent()
+
+        val reader = CsvReader(
+            StringReader(csv),
+            CsvConfig(),
+            ReaderConfig(hasHeader = true, skipInvalidLine = true)
+        )
+
+        val rows = reader.toList()
+        rows.size shouldBe 2
+        rows[0]["name"] shouldBe "Alice"
+        rows[1]["name"] shouldBe "Carol" // Bob行はスキップされる
+    }
+
+    @Test
+    fun `should skip both blank and invalid lines when both options are true`() {
+        val csv = """
+        name,age
+        Alice,30
+        
+        "Bob,"25
+        Carol,40
+    """.trimIndent()
+
+        val reader = CsvReader(
+            StringReader(csv),
+            CsvConfig(),
+            ReaderConfig(
+                hasHeader = true,
+                ignoreBlankLine = true,
+                skipInvalidLine = true
+            )
+        )
+
+        val rows = reader.toList()
+        rows.size shouldBe 2
+        rows[0]["name"] shouldBe "Alice"
+        rows[1]["name"] shouldBe "Carol"
     }
 
 }
