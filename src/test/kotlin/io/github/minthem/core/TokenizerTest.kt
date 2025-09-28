@@ -1,131 +1,120 @@
 package io.github.minthem.core
 
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class TokenizerTest {
 
     @Test
-    fun testSimpleCommaSeparated() {
+    fun `simple comma separated`() {
         val tokenizer = Tokenizer()
         val input = "a,b,c"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a", "b", "c"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a", "b", "c")
     }
 
     @Test
-    fun testEmptyCellBecomesNull() {
+    fun `empty cell becomes null`() {
         val tokenizer = Tokenizer()
         val input = "a,,c"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a", null, "c"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a", null, "c")
     }
 
     @Test
-    fun testTrailingEmptyCellBecomesNull() {
+    fun `trailing empty cell becomes null`() {
         val tokenizer = Tokenizer()
         val input = "a,b,"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a", "b", null), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a", "b", null)
     }
 
     @Test
-    fun testQuotedEmptyCellBecomesEmptyString() {
+    fun `quoted empty cell becomes empty string`() {
         val tokenizer = Tokenizer()
         val input = "a,\"\",c"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a", "", "c"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a", "", "c")
     }
 
     @Test
-    fun testOnlyDelimiter() {
+    fun `only delimiter yields two nulls`() {
         val tokenizer = Tokenizer()
         val input = ","
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf(null, null), actual)
+        tokenizer.tokenize(input) shouldBe listOf(null, null)
     }
 
     @Test
-    fun testQuotedCellWithComma() {
+    fun `quoted cell with comma`() {
         val tokenizer = Tokenizer()
         val input = "\"a,b\",c"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a,b", "c"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a,b", "c")
     }
 
     @Test
-    fun testQuotedCellWithNewline() {
+    fun `quoted cell with newline`() {
         val tokenizer = Tokenizer()
         val input = "\"a\nb\",c"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a\nb", "c"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a\nb", "c")
     }
 
     @Test
-    fun testEscapedQuoteInsideCell() {
+    fun `escaped quote inside cell`() {
         val tokenizer = Tokenizer()
         val input = "\"He said \"\"Hello\"\"\",x"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("He said \"Hello\"", "x"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("He said \"Hello\"", "x")
     }
 
     @Test
-    fun testSingleQuoteAsQuoteChar() {
+    fun `single quote as quoteChar`() {
         val tokenizer = Tokenizer(delimiter = ',', quote = '\'')
         val input = "'a,b',c"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a,b", "c"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a,b", "c")
     }
 
     @Test
-    fun testDifferentDelimiter() {
+    fun `different delimiter`() {
         val tokenizer = Tokenizer(delimiter = ';')
         val input = "a;b;c"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a", "b", "c"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a", "b", "c")
     }
 
     @Test
-    fun testLongCell() {
+    fun `long cell`() {
         val tokenizer = Tokenizer()
         val input = "a,${"x".repeat(1000)},b"
-        val actual = tokenizer.tokenize(input)
-        assertEquals(listOf("a", "x".repeat(1000), "b"), actual)
+        tokenizer.tokenize(input) shouldBe listOf("a", "x".repeat(1000), "b")
     }
 
     @Test
-    fun testUnclosedQuote() {
+    fun `unclosed quote should throw`() {
         val tokenizer = Tokenizer()
-        val input = "\"abc,def" // クオートが閉じられていない
-        assertFailsWith<CsvFormatInternalException> {
+        val input = "\"abc,def"
+        shouldThrow<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }
 
     @Test
-    fun testQuoteStartsInMiddleOfCell() {
+    fun `quote starts in middle of cell should throw`() {
         val tokenizer = Tokenizer()
-        val input = "abc\"def\",ghi" // セル途中でクオート開始
-        assertFailsWith<CsvFormatInternalException> {
+        val input = "abc\"def\",ghi"
+        shouldThrow<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }
 
     @Test
-    fun testUnescapedQuoteInsideQuotedCell() {
+    fun `unescaped quote inside quoted cell should throw`() {
         val tokenizer = Tokenizer()
-        val input = "\"abc \" def\"" // クオート内に単独の `"`
-        assertFailsWith<CsvFormatInternalException> {
+        val input = "\"abc \" def\""
+        shouldThrow<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }
 
     @Test
-    fun testNewlineInsideUnclosedQuote() {
+    fun `newline inside unclosed quote should throw`() {
         val tokenizer = Tokenizer()
-        val input = "\"abc\ndef" // 改行を含むが閉じクオートなし
-        assertFailsWith<CsvFormatInternalException> {
+        val input = "\"abc\ndef"
+        shouldThrow<CsvFormatInternalException> {
             tokenizer.tokenize(input)
         }
     }
