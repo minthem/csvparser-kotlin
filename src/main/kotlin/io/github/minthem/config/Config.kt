@@ -6,7 +6,8 @@ data class CsvConfig(
     val delimiter: Char = ',',
     val quoteChar: Char = '"',
     val locale: Locale = Locale.getDefault(),
-    val strictMode: Boolean = true
+    val strictMode: Boolean = true,
+    val nullValue: String = "",
 )
 
 data class ReaderConfig(
@@ -17,5 +18,12 @@ data class ReaderConfig(
 )
 
 data class WriterConfig(
-    val lineSeparator: String = System.lineSeparator(),
-)
+    val lineSeparator: LineSeparator = LineSeparator.SYSTEM,
+) {
+    enum class LineSeparator(val value: String) {
+        CRLF("\r\n"),
+        LF("\n"),
+        CR("\r"),
+        SYSTEM(System.lineSeparator())
+    }
+}

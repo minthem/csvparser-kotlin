@@ -1,8 +1,9 @@
 package io.github.minthem.config
 
+import io.github.minthem.config.WriterConfig.LineSeparator
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import java.util.Locale
+import java.util.*
 
 class ConfigTest {
 
@@ -44,10 +45,10 @@ class ConfigTest {
     @Test
     fun `WriterConfig default and custom`() {
         WriterConfig().apply {
-            lineSeparator shouldBe System.lineSeparator()
+            lineSeparator.value shouldBe System.lineSeparator()
         }
-        WriterConfig(lineSeparator = "\n").apply {
-            lineSeparator shouldBe "\n"
+        WriterConfig(lineSeparator = LineSeparator.LF).apply {
+            lineSeparator.value shouldBe "\n"
         }
     }
 
