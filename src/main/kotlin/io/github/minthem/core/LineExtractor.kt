@@ -5,9 +5,8 @@ import java.io.Reader
 internal class LineExtractor(
     reader: Reader,
     private val quote: Char = '"',
-    private val lineBufferSize: Int = 1024
+    private val lineBufferSize: Int = 1024,
 ) {
-
     private val charReader = CharReader(reader)
 
     fun getLine(): String? {
@@ -39,8 +38,9 @@ internal class LineExtractor(
     }
 }
 
-private class CharReader(private val reader: Reader) {
-
+private class CharReader(
+    private val reader: Reader,
+) {
     private var cache: Char? = null
 
     fun readChar(): Char? {

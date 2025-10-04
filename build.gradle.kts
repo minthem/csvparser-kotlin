@@ -1,6 +1,12 @@
+import kotlinx.kover.gradle.plugin.dsl.AggregationType
+import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
+import kotlinx.kover.gradle.plugin.dsl.GroupingEntityType
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     kotlin("jvm") version "2.2.10"
     id("org.jetbrains.kotlinx.kover") version "0.9.2"
+    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
     `java-library`
 }
 
@@ -13,7 +19,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    
+
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
@@ -37,44 +43,55 @@ kover {
                 inheritedFrom("java.lang.AutoCloseable")
             }
         }
-        
+
         total {
+
             xml {
                 onCheck = true
                 xmlFile.set(layout.buildDirectory.file("custom.xml"))
             }
-            
+
             html {
                 onCheck = true
                 htmlDir.set(layout.buildDirectory.dir("reports/kover/html"))
                 title = "csvparser Coverage Report"
                 charset = "UTF-8"
             }
-            
+
             log {
                 onCheck = true
-                groupBy = kotlinx.kover.gradle.plugin.dsl.GroupingEntityType.APPLICATION
-                coverageUnits = kotlinx.kover.gradle.plugin.dsl.CoverageUnit.BRANCH
-                aggregationForGroup = kotlinx.kover.gradle.plugin.dsl.AggregationType.MISSED_COUNT
+                groupBy = GroupingEntityType.APPLICATION
+                coverageUnits = CoverageUnit.BRANCH
+                aggregationForGroup = AggregationType.MISSED_COUNT
                 header = null
                 format = "Full coverage is {value}%"
             }
-            
+
             verify {
                 onCheck = true
-                warningInsteadOfFailure = true
-                
+                warningInsteadOfFailure = false
+
                 rule("package covered lines") {
-                    groupBy = kotlinx.kover.gradle.plugin.dsl.GroupingEntityType.PACKAGE
-                    
+                    groupBy = GroupingEntityType.PACKAGE
+
                     bound {
-                        minValue = 10
-                        maxValue = 90
-                        coverageUnits = kotlinx.kover.gradle.plugin.dsl.CoverageUnit.LINE
-                        aggregationForGroup = kotlinx.kover.gradle.plugin.dsl.AggregationType.MISSED_COUNT
+                        minValue = 85
+                        coverageUnits = CoverageUnit.LINE
+                        aggregationForGroup = AggregationType.COVERED_PERCENTAGE
                     }
                 }
             }
         }
+    }
+}
+
+ktlint {
+    version.set("1.5.0")
+    verbose.set(true)
+    android.set(false)
+    ignoreFailures.set(false)
+    reporters {
+        reporter(ReporterType.PLAIN)
+        reporter(ReporterType.CHECKSTYLE)
     }
 }

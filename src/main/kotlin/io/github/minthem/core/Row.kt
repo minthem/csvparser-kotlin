@@ -7,7 +7,6 @@ class Row internal constructor(
     private val cells: List<String?>,
     private val headerIndex: Map<String, Int>? = null,
 ) : Iterable<String?> {
-
     operator fun get(index: Int) = cells[index]
 
     fun getOrNull(index: Int) = cells.getOrNull(index)

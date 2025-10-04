@@ -2,15 +2,17 @@ package io.github.minthem.core
 
 import io.github.minthem.config.CsvConfig
 import io.github.minthem.config.WriterConfig
-import io.kotest.matchers.shouldBe
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.io.IOException
 
 class CsvWriterTest {
-
-    private fun newWriter(out: Appendable = StringBuilder(), nullValue: String = ""): Pair<CsvWriter, Appendable> {
+    private fun newWriter(
+        out: Appendable = StringBuilder(),
+        nullValue: String = "",
+    ): Pair<CsvWriter, Appendable> {
         val config = CsvConfig(delimiter = ',', quoteChar = '"', nullValue = nullValue)
         val writer = CsvWriter(out, config, WriterConfig(WriterConfig.LineSeparator.LF))
         return writer to out
@@ -162,31 +164,33 @@ class CsvWriterTest {
 
     @Nested
     inner class ErrorTest {
-
         @Test
         fun `should throw IllegalArgumentException when header is empty`() {
             val (writer, _) = newWriter()
-            val e = shouldThrow<IllegalArgumentException> {
-                writer.writeHeader(emptyList())
-            }
+            val e =
+                shouldThrow<IllegalArgumentException> {
+                    writer.writeHeader(emptyList())
+                }
             e.message shouldBe "Header cannot be empty."
         }
 
         @Test
         fun `should throw IllegalArgumentException when header contains blank strings`() {
             val (writer, _) = newWriter()
-            val e = shouldThrow<IllegalArgumentException> {
-                writer.writeHeader(listOf("name", " ", "age"))
-            }
+            val e =
+                shouldThrow<IllegalArgumentException> {
+                    writer.writeHeader(listOf("name", " ", "age"))
+                }
             e.message shouldBe "Header cannot contain empty columns."
         }
 
         @Test
         fun `should throw IllegalArgumentException when header contains duplicate names`() {
             val (writer, _) = newWriter()
-            val e = shouldThrow<IllegalArgumentException> {
-                writer.writeHeader(listOf("name", "age", "name"))
-            }
+            val e =
+                shouldThrow<IllegalArgumentException> {
+                    writer.writeHeader(listOf("name", "age", "name"))
+                }
             e.message shouldBe "Header cannot contain duplicate columns."
         }
 
@@ -194,9 +198,10 @@ class CsvWriterTest {
         fun `should throw IllegalStateException when writing row before header`() {
             val (writer, _) = newWriter()
             writer.writeRow(Row(listOf("Alice", "24")))
-            val e = shouldThrow<IllegalStateException> {
-                writer.writeHeader(listOf("Name", "Age"))
-            }
+            val e =
+                shouldThrow<IllegalStateException> {
+                    writer.writeHeader(listOf("Name", "Age"))
+                }
             e.message shouldBe "Cannot write header after rows have been written."
         }
 
@@ -204,20 +209,23 @@ class CsvWriterTest {
         fun `should throw IllegalStateException when writing header after header`() {
             val (writer, _) = newWriter()
             writer.writeHeader(listOf("Name", "Age"))
-            val e = shouldThrow<IllegalStateException> {
-                writer.writeHeader(listOf("Name", "Age"))
-            }
+            val e =
+                shouldThrow<IllegalStateException> {
+                    writer.writeHeader(listOf("Name", "Age"))
+                }
             e.message shouldBe "Header has already been written."
         }
 
         @Test
         fun `should propagate IOException when writing header`() {
             class TestAppendable : Appendable {
-                override fun append(csq: CharSequence?): Appendable {
-                    throw IOException("Test exception")
-                }
+                override fun append(csq: CharSequence?): Appendable = throw IOException("Test exception")
 
-                override fun append(p0: CharSequence?, p1: Int, p2: Int): java.lang.Appendable = this
+                override fun append(
+                    p0: CharSequence?,
+                    p1: Int,
+                    p2: Int,
+                ): java.lang.Appendable = this
 
                 override fun append(p0: Char): java.lang.Appendable = this
             }
@@ -231,11 +239,13 @@ class CsvWriterTest {
         @Test
         fun `should propagate IOException when writing row`() {
             class TestAppendable : Appendable {
-                override fun append(csq: CharSequence?): Appendable {
-                    throw IOException("Test exception")
-                }
+                override fun append(csq: CharSequence?): Appendable = throw IOException("Test exception")
 
-                override fun append(p0: CharSequence?, p1: Int, p2: Int): java.lang.Appendable = this
+                override fun append(
+                    p0: CharSequence?,
+                    p1: Int,
+                    p2: Int,
+                ): java.lang.Appendable = this
 
                 override fun append(p0: Char): java.lang.Appendable = this
             }
@@ -244,7 +254,6 @@ class CsvWriterTest {
             shouldThrow<IOException> {
                 writer.writeRow(Row(listOf("Alice", "24")))
             }
-
         }
     }
 }
