@@ -1,3 +1,7 @@
+import kotlinx.kover.gradle.plugin.dsl.GroupingEntityType
+import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
+import kotlinx.kover.gradle.plugin.dsl.AggregationType
+
 plugins {
     kotlin("jvm") version "2.2.10"
     id("org.jetbrains.kotlinx.kover") version "0.9.2"
@@ -39,6 +43,7 @@ kover {
         }
         
         total {
+
             xml {
                 onCheck = true
                 xmlFile.set(layout.buildDirectory.file("custom.xml"))
@@ -53,9 +58,9 @@ kover {
             
             log {
                 onCheck = true
-                groupBy = kotlinx.kover.gradle.plugin.dsl.GroupingEntityType.APPLICATION
-                coverageUnits = kotlinx.kover.gradle.plugin.dsl.CoverageUnit.BRANCH
-                aggregationForGroup = kotlinx.kover.gradle.plugin.dsl.AggregationType.MISSED_COUNT
+                groupBy = GroupingEntityType.APPLICATION
+                coverageUnits = CoverageUnit.BRANCH
+                aggregationForGroup = AggregationType.MISSED_COUNT
                 header = null
                 format = "Full coverage is {value}%"
             }
@@ -65,13 +70,12 @@ kover {
                 warningInsteadOfFailure = false
                 
                 rule("package covered lines") {
-                    groupBy = kotlinx.kover.gradle.plugin.dsl.GroupingEntityType.PACKAGE
+                    groupBy = GroupingEntityType.PACKAGE
                     
                     bound {
-                        minValue = 10
-                        maxValue = 90
-                        coverageUnits = kotlinx.kover.gradle.plugin.dsl.CoverageUnit.LINE
-                        aggregationForGroup = kotlinx.kover.gradle.plugin.dsl.AggregationType.MISSED_COUNT
+                        minValue = 85
+                        coverageUnits = CoverageUnit.LINE
+                        aggregationForGroup = AggregationType.COVERED_PERCENTAGE
                     }
                 }
             }
