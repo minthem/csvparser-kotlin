@@ -85,7 +85,7 @@ jobs:
       - name: Run linters (adjust if tools are present)
         run: |
           ./gradlew --no-daemon --stacktrace \
-            ktlintCheck detekt || true
+            ktlintCheck
 
       - name: Upload Lint Reports
         if: always()
