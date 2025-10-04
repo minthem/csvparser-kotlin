@@ -62,7 +62,7 @@ kover {
             
             verify {
                 onCheck = true
-                warningInsteadOfFailure = true
+                warningInsteadOfFailure = false
                 
                 rule("package covered lines") {
                     groupBy = kotlinx.kover.gradle.plugin.dsl.GroupingEntityType.PACKAGE
