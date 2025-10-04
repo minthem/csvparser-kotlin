@@ -8,7 +8,6 @@ class CsvWriter(
     private val config: CsvConfig,
     private val writeConfig: WriterConfig = WriterConfig(),
 ) {
-
     private var isRowWritten = false
     private var isHeaderWritten = false
     private var header: List<String>? = null
@@ -41,9 +40,10 @@ class CsvWriter(
     }
 
     fun writeRow(row: Row) {
-        val cells = header?.let { header ->
-            header.map { row.getOrNull(it) }
-        } ?: row.toList()
+        val cells =
+            header?.let { header ->
+                header.map { row.getOrNull(it) }
+            } ?: row.toList()
         val line = cells.joinToString(config.delimiter.toString()) { escape(it) }
         out.append(line).append(writeConfig.lineSeparator.value)
         isRowWritten = true
@@ -52,10 +52,10 @@ class CsvWriter(
     private fun escape(value: String?): String {
         val needQuote =
             value?.let {
-                it.contains(config.delimiter)
-                        || it.contains('\r')
-                        || it.contains('\n')
-                        || it.contains(config.quoteChar)
+                it.contains(config.delimiter) ||
+                    it.contains('\r') ||
+                    it.contains('\n') ||
+                    it.contains(config.quoteChar)
             } ?: false
 
         return if (needQuote) {

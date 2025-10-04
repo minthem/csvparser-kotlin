@@ -2,9 +2,8 @@ package io.github.minthem.core
 
 internal class Tokenizer(
     private val delimiter: Char = ',',
-    private val quote: Char = '"'
+    private val quote: Char = '"',
 ) {
-
     fun tokenize(line: String): List<String?> {
         val context = Context(delimiter, quote)
         var state = State.START
@@ -26,16 +25,21 @@ internal class Tokenizer(
             return context.result()
         } catch (e: IllegalArgumentException) {
             throw CsvFormatInternalException(
-                e.message, index + 1
+                e.message,
+                index + 1,
             )
         }
     }
 }
 
-internal class CsvFormatInternalException(message: String?, val position: Int) : RuntimeException(message)
+internal class CsvFormatInternalException(
+    message: String?,
+    val position: Int,
+) : RuntimeException(message)
 
 private class Context(
-    val delimiter: Char, val quote: Char,
+    val delimiter: Char,
+    val quote: Char,
 ) {
     private val result = mutableListOf<String?>()
     private val sb = StringBuilder()
@@ -47,7 +51,7 @@ private class Context(
                 inQuote -> sb.toString()
                 sb.isNotEmpty() -> sb.toString()
                 else -> null
-            }
+            },
         )
         sb.clear()
         inQuote = false
@@ -57,9 +61,7 @@ private class Context(
         inQuote = true
     }
 
-    fun result(): List<String?> {
-        return result
-    }
+    fun result(): List<String?> = result
 
     fun addChar(ch: Char) {
         sb.append(ch)
@@ -67,10 +69,12 @@ private class Context(
 }
 
 private enum class State {
-
     START {
-        override fun action(char: Char, ctx: Context): State {
-            return when (char) {
+        override fun action(
+            char: Char,
+            ctx: Context,
+        ): State =
+            when (char) {
                 ctx.delimiter -> {
                     ctx.endToken()
                     START
@@ -86,11 +90,13 @@ private enum class State {
                     IN_FIELD
                 }
             }
-        }
     },
     IN_FIELD {
-        override fun action(char: Char, ctx: Context): State {
-            return when (char) {
+        override fun action(
+            char: Char,
+            ctx: Context,
+        ): State =
+            when (char) {
                 ctx.delimiter -> {
                     ctx.endToken()
                     START
@@ -105,11 +111,13 @@ private enum class State {
                     IN_FIELD
                 }
             }
-        }
     },
     IN_QUOTE_FIELD {
-        override fun action(char: Char, ctx: Context): State {
-            return when (char) {
+        override fun action(
+            char: Char,
+            ctx: Context,
+        ): State =
+            when (char) {
                 ctx.quote -> {
                     AFTER_QUOTE
                 }
@@ -119,11 +127,13 @@ private enum class State {
                     IN_QUOTE_FIELD
                 }
             }
-        }
     },
     AFTER_QUOTE {
-        override fun action(char: Char, ctx: Context): State {
-            return when (char) {
+        override fun action(
+            char: Char,
+            ctx: Context,
+        ): State =
+            when (char) {
                 ctx.delimiter -> {
                     ctx.endToken()
                     START
@@ -138,8 +148,10 @@ private enum class State {
                     throw IllegalArgumentException("Unexpected character after closing quote: $char")
                 }
             }
-        }
-    };
+    }, ;
 
-    abstract fun action(char: Char, ctx: Context): State
+    abstract fun action(
+        char: Char,
+        ctx: Context,
+    ): State
 }

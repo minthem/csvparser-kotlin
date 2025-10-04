@@ -5,7 +5,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class TokenizerTest {
-
     @Test
     fun `simple comma separated`() {
         val tokenizer = Tokenizer()

@@ -8,7 +8,7 @@ open class CsvException(
 class CsvFormatException(
     message: String,
     val lineNo: Int,
-    val position: Int
+    val position: Int,
 ) : CsvException("$message (at line $lineNo, position $position)")
 
 class CsvLineFormatException(
@@ -16,9 +16,7 @@ class CsvLineFormatException(
     val lineNo: Int,
 ) : CsvException("$message (at line $lineNo)")
 
-
 class CsvHeaderNotFoundException : CsvException("No header found")
-
 
 class CsvColumnNotFoundException(
     column: String,

@@ -7,7 +7,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class RowTest {
-
     private val header = mapOf("name" to 0, "email" to 1, "city" to 2)
     private val cells = listOf("Foo", "test@example.com", "Tokyo")
 

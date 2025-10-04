@@ -5,8 +5,11 @@ import org.junit.jupiter.api.Test
 import java.io.StringReader
 
 class LineExtractorTest {
-
-    private fun extractAll(input: String, quote: Char = '"', buffer: Int = 1024): List<String> {
+    private fun extractAll(
+        input: String,
+        quote: Char = '"',
+        buffer: Int = 1024,
+    ): List<String> {
         val reader = LineExtractor(StringReader(input), quote = quote, lineBufferSize = buffer)
         return generateSequence { reader.getLine() }.toList()
     }

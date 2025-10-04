@@ -28,10 +28,12 @@ data class ReaderConfig(
 data class WriterConfig(
     val lineSeparator: LineSeparator = LineSeparator.SYSTEM,
 ) {
-    enum class LineSeparator(val value: String) {
+    enum class LineSeparator(
+        val value: String,
+    ) {
         CRLF("\r\n"),
         LF("\n"),
         CR("\r"),
-        SYSTEM(System.lineSeparator())
+        SYSTEM(System.lineSeparator()),
     }
 }
