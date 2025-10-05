@@ -11,6 +11,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
     `java-library`
     id("com.vanniktech.maven.publish") version "0.34.0"
+    id("org.jetbrains.dokka") version "1.9.20"
 }
 
 group = "io.github.minthem"
@@ -35,7 +36,6 @@ kotlin {
 
 java {
     withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.test {
@@ -46,7 +46,7 @@ mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
 
-    configure(KotlinJvm(JavadocJar.None()))
+    configure(KotlinJvm(JavadocJar.Dokka("dokkaHtml")))
 
     coordinates("io.github.minthem", "csvparser", version.toString())
 
