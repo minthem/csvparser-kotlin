@@ -1,3 +1,5 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinJvm
 import kotlinx.kover.gradle.plugin.dsl.AggregationType
 import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 import kotlinx.kover.gradle.plugin.dsl.GroupingEntityType
@@ -8,10 +10,11 @@ plugins {
     id("org.jetbrains.kotlinx.kover") version "0.9.2"
     id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
     `java-library`
+    id("com.vanniktech.maven.publish") version "0.34.0"
 }
 
 group = "io.github.minthem"
-version = "1.0-SNAPSHOT"
+version = System.getenv("CI_TAG") ?: "0.0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -30,8 +33,46 @@ kotlin {
     jvmToolchain(21)
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 tasks.test {
     useJUnitPlatform()
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    configure(KotlinJvm(JavadocJar.None()))
+
+    coordinates("io.github.minthem", "csvparser", version.toString())
+
+    pom {
+        name.set("csvparser")
+        description.set("A simple CSV parser/writer for Kotlin")
+        inceptionYear.set("2025")
+        url.set("https://github.com/minthem/csvparser")
+        licenses {
+            license {
+                name.set("The MIT License")
+                url.set("https://opensource.org/licenses/MIT")
+            }
+        }
+        developers {
+            developer {
+                id.set("minthem")
+                name.set("")
+                url.set("https://github.com/minthem")
+            }
+        }
+        scm {
+            url.set("https://github.com/minthem/csvparser")
+            connection.set("scm:git:git://github.com/minthem/csvparser.git")
+        }
+    }
 }
 
 kover {
