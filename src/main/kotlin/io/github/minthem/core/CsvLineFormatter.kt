@@ -31,25 +31,31 @@ internal class CsvLineFormatter(
         }
     }
 
-    fun join(cells: List<String?>, nullValue: String = ""): String {
+    fun join(
+        cells: List<String?>,
+        nullValue: String = "",
+    ): String {
         val line = cells.joinToString(delimiter.toString()) { escape(it, nullValue) }
         return line
     }
 
-    private fun escape(value: String?, nullValue: String = ""): String {
+    private fun escape(
+        value: String?,
+        nullValue: String = "",
+    ): String {
         val needQuote =
             value?.let {
                 it.contains(delimiter) ||
-                        it.contains('\r') ||
-                        it.contains('\n') ||
-                        it.contains(quote)
+                    it.contains('\r') ||
+                    it.contains('\n') ||
+                    it.contains(quote)
             } ?: false
 
         return if (needQuote) {
-            val escaped = value.replace(quote.toString(), "${quote}${quote}")
-            "${quote}${escaped}${quote}"
+            val escaped = value.replace(quote.toString(), "${quote}$quote")
+            "${quote}${escaped}$quote"
         } else {
-            value?.ifEmpty { "${quote}${quote}" } ?: nullValue
+            value?.ifEmpty { "${quote}$quote" } ?: nullValue
         }
     }
 }
