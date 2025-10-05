@@ -135,13 +135,25 @@ class CsvWriterTest {
         }
 
         @Test
-        fun `should respect custom line separator`() {
+        fun `should respect custom line separator (Windows)`() {
             val out = StringBuilder()
             val config = CsvConfig()
             val writer = CsvWriter(out, config, WriterConfig(WriterConfig.LineSeparator.CRLF))
 
             writer.writeRow(Row(listOf("Alice", "24")))
-            out.toString() shouldBe "Alice,24\r\n"
+            writer.writeRow(Row(listOf("Bob", "30")))
+            out.toString() shouldBe "Alice,24\r\nBob,30\r\n"
+        }
+
+        @Test
+        fun `should respect custom line separator (Mac OS)`() {
+            val out = StringBuilder()
+            val config = CsvConfig()
+            val writer = CsvWriter(out, config, WriterConfig(WriterConfig.LineSeparator.CR))
+
+            writer.writeRow(Row(listOf("Alice", "24")))
+            writer.writeRow(Row(listOf("Bob", "30")))
+            out.toString() shouldBe "Alice,24\rBob,30\r"
         }
 
         @Test
