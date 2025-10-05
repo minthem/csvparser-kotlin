@@ -23,10 +23,12 @@ class CsvWriter(
     private var isHeaderWritten = false
     private var header: List<String>? = null
 
+    private val formatter = CsvLineFormatter(config.delimiter, config.quoteChar)
+
     /**
      * Writes a header row.
      *
-     * @throws IllegalArgumentException if the header is empty, contains blank cells, or duplicates
+     * @throws IllegalArgumentException if the header is empty, contains blank cells or duplicates
      * @throws IllegalStateException if called twice or after any data row has been written
      */
     fun writeHeader(header: List<String>) {
@@ -50,7 +52,7 @@ class CsvWriter(
             throw IllegalStateException("Header has already been written.")
         }
 
-        val headerLine = header.joinToString(config.delimiter.toString()) { escape(it) }
+        val headerLine = formatter.join(header)
         out.append(headerLine).append(writeConfig.lineSeparator.value)
         this.header = header
         isHeaderWritten = true
@@ -68,25 +70,8 @@ class CsvWriter(
             header?.let { header ->
                 header.map { row.getOrNull(it) }
             } ?: row.toList()
-        val line = cells.joinToString(config.delimiter.toString()) { escape(it) }
+        val line = formatter.join(cells, config.nullValue)
         out.append(line).append(writeConfig.lineSeparator.value)
         isRowWritten = true
-    }
-
-    private fun escape(value: String?): String {
-        val needQuote =
-            value?.let {
-                it.contains(config.delimiter) ||
-                    it.contains('\r') ||
-                    it.contains('\n') ||
-                    it.contains(config.quoteChar)
-            } ?: false
-
-        return if (needQuote) {
-            val escaped = value.replace(config.quoteChar.toString(), "${config.quoteChar}${config.quoteChar}")
-            "${config.quoteChar}${escaped}${config.quoteChar}"
-        } else {
-            value?.ifEmpty { "${config.quoteChar}${config.quoteChar}" } ?: config.nullValue
-        }
     }
 }
