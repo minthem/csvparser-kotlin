@@ -135,7 +135,7 @@ class ShortCsvConverter : CsvConverter<Short> {
     }
 }
 
-class ByteCsvConverter : CsvConverter<Byte> {
+object ByteCsvConverter : CsvConverter<Byte> {
     override fun deserialize(
         value: String?,
         locale: Locale,
