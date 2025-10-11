@@ -3,14 +3,13 @@ package io.github.minthem.converter
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.NullAndEmptySource
-import java.util.*
+import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class StringCsvConverterTest {
-
     @Nested
     inner class DeserializeTest {
         @ParameterizedTest

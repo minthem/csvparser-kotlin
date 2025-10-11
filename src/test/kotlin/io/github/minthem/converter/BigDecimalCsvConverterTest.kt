@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import java.math.BigDecimal
-import java.util.*
+import java.util.Locale
 import java.util.stream.Stream
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +17,6 @@ import kotlin.test.assertTrue
  * Unit tests for the `BigDecimalCsvConverter` class.
  */
 class BigDecimalCsvConverterTest {
-
     @Nested
     inner class DeserializeTest {
         @ParameterizedTest
@@ -34,7 +33,7 @@ class BigDecimalCsvConverterTest {
             strValue: String,
             locale: Locale,
             pattern: String,
-            expected: BigDecimal
+            expected: BigDecimal,
         ) {
             val result = BigDecimalCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isSuccess)
@@ -46,7 +45,7 @@ class BigDecimalCsvConverterTest {
         fun `deserialize should throw error for invalid input`(
             strValue: String,
             locale: Locale,
-            pattern: String
+            pattern: String,
         ) {
             val result = BigDecimalCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isFailure)
@@ -76,7 +75,7 @@ class BigDecimalCsvConverterTest {
         fun `deserialize should round HALF_UP with pattern scale`(
             strValue: String,
             pattern: String,
-            expected: BigDecimal
+            expected: BigDecimal,
         ) {
             val result = BigDecimalCsvConverter.deserialize(strValue, Locale.US, pattern)
             assertTrue(result.isSuccess)
@@ -99,7 +98,7 @@ class BigDecimalCsvConverterTest {
             bdValue: BigDecimal,
             locale: Locale,
             pattern: String,
-            expected: String
+            expected: String,
         ) {
             val result = BigDecimalCsvConverter.serialize(bdValue, locale, pattern)
             assertTrue(result.isSuccess)
@@ -123,39 +122,42 @@ class BigDecimalCsvConverterTest {
 
     companion object {
         @JvmStatic
-        fun deserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("12345.678", Locale.US, "", BigDecimal("12345.678")),
-            Arguments.of("12,345.678", Locale.US, "#,##0.###", BigDecimal("12345.678")),
-            Arguments.of("$ 12,345.678", Locale.US, "'$' #,##0.###", BigDecimal("12345.678")),
-            Arguments.of("12.345,678", Locale.GERMANY, "#,##0.###", BigDecimal("12345.678")),
-        )
-
-        @JvmStatic
-        fun invalidDeserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("invalid", Locale.US, ""),
-            Arguments.of("12345.67abc", Locale.US, ""),
-            Arguments.of("abc12345.67", Locale.US, ""),
-            Arguments.of("12 345.67", Locale.US, ""),
-            Arguments.of("1_234.56", Locale.US, ""),
-            Arguments.of("1234", Locale.US, "invalid.pattern"),
-
+        fun deserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("12345.678", Locale.US, "", BigDecimal("12345.678")),
+                Arguments.of("12,345.678", Locale.US, "#,##0.###", BigDecimal("12345.678")),
+                Arguments.of("$ 12,345.678", Locale.US, "'$' #,##0.###", BigDecimal("12345.678")),
+                Arguments.of("12.345,678", Locale.GERMANY, "#,##0.###", BigDecimal("12345.678")),
             )
 
         @JvmStatic
-        fun roundingEdgeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("0.005", "#.00", BigDecimal("0.01")),
-            Arguments.of("9.995", "#.00", BigDecimal("10.00")),
-            Arguments.of("1.2345", "#.000", BigDecimal("1.235"))
-        )
+        fun invalidDeserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("invalid", Locale.US, ""),
+                Arguments.of("12345.67abc", Locale.US, ""),
+                Arguments.of("abc12345.67", Locale.US, ""),
+                Arguments.of("12 345.67", Locale.US, ""),
+                Arguments.of("1_234.56", Locale.US, ""),
+                Arguments.of("1234", Locale.US, "invalid.pattern"),
+            )
 
         @JvmStatic
-        fun serializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of(BigDecimal("12345.678"), Locale.US, "", "12345.678"),
-            Arguments.of(BigDecimal("12345.678"), Locale.US, "#,##0.###", "12,345.678"),
-            Arguments.of(BigDecimal("12345.678"), Locale.US, "'$' #,##0.###", "$ 12,345.678"),
-            Arguments.of(BigDecimal("12345.678"), Locale.GERMANY, "#,##0.###", "12.345,678"),
-            Arguments.of(BigDecimal("1E+3"), Locale.US, "", "1000"),
-            Arguments.of(BigDecimal("-1234.5"), Locale.US, "#,##0.00;(#,##0.00)", "(1,234.50)"),
-        )
+        fun roundingEdgeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("0.005", "#.00", BigDecimal("0.01")),
+                Arguments.of("9.995", "#.00", BigDecimal("10.00")),
+                Arguments.of("1.2345", "#.000", BigDecimal("1.235")),
+            )
+
+        @JvmStatic
+        fun serializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(BigDecimal("12345.678"), Locale.US, "", "12345.678"),
+                Arguments.of(BigDecimal("12345.678"), Locale.US, "#,##0.###", "12,345.678"),
+                Arguments.of(BigDecimal("12345.678"), Locale.US, "'$' #,##0.###", "$ 12,345.678"),
+                Arguments.of(BigDecimal("12345.678"), Locale.GERMANY, "#,##0.###", "12.345,678"),
+                Arguments.of(BigDecimal("1E+3"), Locale.US, "", "1000"),
+                Arguments.of(BigDecimal("-1234.5"), Locale.US, "#,##0.00;(#,##0.00)", "(1,234.50)"),
+            )
     }
 }

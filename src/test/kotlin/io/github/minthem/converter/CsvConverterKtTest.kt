@@ -1,13 +1,13 @@
 package io.github.minthem.converter
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.util.Locale
 import kotlin.reflect.KClass
 
 class CsvConverterKtTest {
-
     @Test
     fun `convertNumber handles valid Int conversion`() {
         val result = convertNumber(Int::class, "123", Locale.US, "#")
@@ -52,17 +52,19 @@ class CsvConverterKtTest {
 
     @Test
     fun `convertNumber throws NumberFormatException for invalid format`() {
-        val exception = assertThrows(NumberFormatException::class.java) {
-            convertNumber(Int::class, "invalid", Locale.US, "#")
-        }
+        val exception =
+            assertThrows(NumberFormatException::class.java) {
+                convertNumber(Int::class, "invalid", Locale.US, "#")
+            }
         assertEquals("Invalid number: \"invalid\"", exception.message)
     }
 
     @Test
     fun `convertNumber throws ArithmeticException for value out of range`() {
-        val exception = assertThrows(ArithmeticException::class.java) {
-            convertNumber(Byte::class, "128", Locale.US, "#")
-        }
+        val exception =
+            assertThrows(ArithmeticException::class.java) {
+                convertNumber(Byte::class, "128", Locale.US, "#")
+            }
         assertEquals("Value out of range for class kotlin.Byte: \"128\"", exception.message)
     }
 
@@ -77,18 +79,19 @@ class CsvConverterKtTest {
 
     @Test
     fun `convertNumber throws NumberFormatException for empty string`() {
-        val exception = assertThrows(NumberFormatException::class.java) {
-            convertNumber(Int::class, "", Locale.US, "#")
-        }
+        val exception =
+            assertThrows(NumberFormatException::class.java) {
+                convertNumber(Int::class, "", Locale.US, "#")
+            }
         assertEquals("Invalid number: \"\"", exception.message)
     }
 
     @Test
     fun `convertNumber throws IllegalArgumentException for unsupported type`() {
-        val exception = assertThrows(IllegalArgumentException::class.java) {
-            convertNumber(String::class as KClass<Number>, "123", Locale.US, "#")
-        }
+        val exception =
+            assertThrows(IllegalArgumentException::class.java) {
+                convertNumber(String::class as KClass<Number>, "123", Locale.US, "#")
+            }
         assertEquals("Unsupported number type: class kotlin.String", exception.message)
     }
 }
-

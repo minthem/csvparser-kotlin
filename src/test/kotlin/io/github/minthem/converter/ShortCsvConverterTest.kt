@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
-import java.util.*
+import java.util.Locale
 import java.util.stream.Stream
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,7 +14,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ShortCsvConverterTest {
-
     @Nested
     inner class DeserializeTest {
         @ParameterizedTest
@@ -31,7 +30,7 @@ class ShortCsvConverterTest {
             strValue: String,
             locale: Locale,
             pattern: String,
-            expected: Short
+            expected: Short,
         ) {
             val result = ShortCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isSuccess)
@@ -43,7 +42,7 @@ class ShortCsvConverterTest {
         fun `deserialize should fail for invalid input`(
             strValue: String,
             locale: Locale,
-            pattern: String
+            pattern: String,
         ) {
             val result = ShortCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isFailure)
@@ -87,7 +86,7 @@ class ShortCsvConverterTest {
             value: Short,
             locale: Locale,
             pattern: String,
-            expected: String
+            expected: String,
         ) {
             val result = ShortCsvConverter.serialize(value, locale, pattern)
             assertTrue(result.isSuccess)
@@ -104,33 +103,36 @@ class ShortCsvConverterTest {
 
     companion object {
         @JvmStatic
-        fun deserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("0", Locale.US, "", 0.toShort()),
-            Arguments.of("123", Locale.US, "", 123.toShort()),
-            Arguments.of("-123", Locale.US, "", (-123).toShort()),
-            Arguments.of("1,234", Locale.US, "#,###", 1234.toShort()),
-            Arguments.of("12.345", Locale.GERMANY, "#,###", 12345.toShort()),
-            Arguments.of("1234", Locale.US, "###;(###)", 1234.toShort()),
-            Arguments.of("(1234)", Locale.US, "###;(###)", (-1234).toShort()),
-        )
+        fun deserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("0", Locale.US, "", 0.toShort()),
+                Arguments.of("123", Locale.US, "", 123.toShort()),
+                Arguments.of("-123", Locale.US, "", (-123).toShort()),
+                Arguments.of("1,234", Locale.US, "#,###", 1234.toShort()),
+                Arguments.of("12.345", Locale.GERMANY, "#,###", 12345.toShort()),
+                Arguments.of("1234", Locale.US, "###;(###)", 1234.toShort()),
+                Arguments.of("(1234)", Locale.US, "###;(###)", (-1234).toShort()),
+            )
 
         @JvmStatic
-        fun invalidDeserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("abc", Locale.US, "#"),
-            Arguments.of("12 34", Locale.US, "#"),
-            Arguments.of("1_234", Locale.US, "#"),
-            Arguments.of("1234", Locale.US, "invalid.pattern"),
-        )
+        fun invalidDeserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("abc", Locale.US, "#"),
+                Arguments.of("12 34", Locale.US, "#"),
+                Arguments.of("1_234", Locale.US, "#"),
+                Arguments.of("1234", Locale.US, "invalid.pattern"),
+            )
 
         @JvmStatic
-        fun serializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of(0.toShort(), Locale.US, "", "0"),
-            Arguments.of(123.toShort(), Locale.US, "", "123"),
-            Arguments.of((-123).toShort(), Locale.US, "", "-123"),
-            Arguments.of(1234.toShort(), Locale.US, "#,###", "1,234"),
-            Arguments.of(1234.toShort(), Locale.GERMANY, "#,###", "1.234"),
-            Arguments.of(1234.toShort(), Locale.US, "###;(###)", "1234"),
-            Arguments.of((-1234).toShort(), Locale.US, "###;(###)", "(1234)"),
-        )
+        fun serializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(0.toShort(), Locale.US, "", "0"),
+                Arguments.of(123.toShort(), Locale.US, "", "123"),
+                Arguments.of((-123).toShort(), Locale.US, "", "-123"),
+                Arguments.of(1234.toShort(), Locale.US, "#,###", "1,234"),
+                Arguments.of(1234.toShort(), Locale.GERMANY, "#,###", "1.234"),
+                Arguments.of(1234.toShort(), Locale.US, "###;(###)", "1234"),
+                Arguments.of((-1234).toShort(), Locale.US, "###;(###)", "(1234)"),
+            )
     }
 }

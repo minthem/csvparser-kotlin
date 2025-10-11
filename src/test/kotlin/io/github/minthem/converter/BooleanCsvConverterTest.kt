@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
-import java.util.*
+import java.util.Locale
 import java.util.stream.Stream
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -12,7 +12,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BooleanCsvConverterTest {
-
     @Nested
     inner class DeserializeTest {
         @ParameterizedTest
@@ -28,7 +27,7 @@ class BooleanCsvConverterTest {
         fun `deserialize should respect true or false patterns (case-sensitive)`(
             input: String,
             pattern: String,
-            expected: Boolean
+            expected: Boolean,
         ) {
             val result = BooleanCsvConverter.deserialize(input, Locale.getDefault(), pattern)
             assertTrue(result.isSuccess)
@@ -39,8 +38,10 @@ class BooleanCsvConverterTest {
         fun `deserialize should use default exact tokens when none provided`() {
             val t = BooleanCsvConverter.deserialize("true", Locale.getDefault(), "")
             val f = BooleanCsvConverter.deserialize("false", Locale.getDefault(), "")
-            assertTrue(t.isSuccess); assertEquals(true, t.getOrNull())
-            assertTrue(f.isSuccess); assertEquals(false, f.getOrNull())
+            assertTrue(t.isSuccess)
+            assertEquals(true, t.getOrNull())
+            assertTrue(f.isSuccess)
+            assertEquals(false, f.getOrNull())
         }
 
         @Test
@@ -57,7 +58,7 @@ class BooleanCsvConverterTest {
         fun `serialize should pick first token of true or false side`(
             value: Boolean,
             pattern: String,
-            expected: String
+            expected: String,
         ) {
             val result = BooleanCsvConverter.serialize(value, Locale.getDefault(), pattern)
             assertTrue(result.isSuccess)
@@ -74,22 +75,34 @@ class BooleanCsvConverterTest {
 
     companion object {
         @JvmStatic
-        fun truthyFalsyProvider(): Stream<org.junit.jupiter.params.provider.Arguments> = Stream.of(
-            org.junit.jupiter.params.provider.Arguments.of("yes", "yes,true|no,false", true),
-            org.junit.jupiter.params.provider.Arguments.of("no", "yes,true|no,false", false),
-            // different sets
-            org.junit.jupiter.params.provider.Arguments.of("on", "on,yes,true|off,no,false", true),
-            org.junit.jupiter.params.provider.Arguments.of("off", "on,yes,true|off,no,false", false),
-        )
+        fun truthyFalsyProvider(): Stream<org.junit.jupiter.params.provider.Arguments> =
+            Stream.of(
+                org.junit.jupiter.params.provider.Arguments
+                    .of("yes", "yes,true|no,false", true),
+                org.junit.jupiter.params.provider.Arguments
+                    .of("no", "yes,true|no,false", false),
+                // different sets
+                org.junit.jupiter.params.provider.Arguments
+                    .of("on", "on,yes,true|off,no,false", true),
+                org.junit.jupiter.params.provider.Arguments
+                    .of("off", "on,yes,true|off,no,false", false),
+            )
 
         @JvmStatic
-        fun serializeProvider(): Stream<org.junit.jupiter.params.provider.Arguments> = Stream.of(
-            org.junit.jupiter.params.provider.Arguments.of(true, "", "true"),
-            org.junit.jupiter.params.provider.Arguments.of(false, "", "false"),
-            org.junit.jupiter.params.provider.Arguments.of(true, "Y,Yes|N,No", "Y"),
-            org.junit.jupiter.params.provider.Arguments.of(false, "Y,Yes|N,No", "N"),
-            org.junit.jupiter.params.provider.Arguments.of(true, "はい,真|いいえ,偽", "はい"),
-            org.junit.jupiter.params.provider.Arguments.of(false, "はい,真|いいえ,偽", "いいえ"),
-        )
+        fun serializeProvider(): Stream<org.junit.jupiter.params.provider.Arguments> =
+            Stream.of(
+                org.junit.jupiter.params.provider.Arguments
+                    .of(true, "", "true"),
+                org.junit.jupiter.params.provider.Arguments
+                    .of(false, "", "false"),
+                org.junit.jupiter.params.provider.Arguments
+                    .of(true, "Y,Yes|N,No", "Y"),
+                org.junit.jupiter.params.provider.Arguments
+                    .of(false, "Y,Yes|N,No", "N"),
+                org.junit.jupiter.params.provider.Arguments
+                    .of(true, "はい,真|いいえ,偽", "はい"),
+                org.junit.jupiter.params.provider.Arguments
+                    .of(false, "はい,真|いいえ,偽", "いいえ"),
+            )
     }
 }

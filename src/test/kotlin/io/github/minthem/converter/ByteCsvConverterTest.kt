@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
-import java.util.*
+import java.util.Locale
 import java.util.stream.Stream
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,13 +14,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ByteCsvConverterTest {
-
     @Nested
     inner class DeserializeTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            ByteCsvConverter
             val result = ByteCsvConverter.deserialize(source, Locale.US, "")
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
@@ -32,7 +30,7 @@ class ByteCsvConverterTest {
             strValue: String,
             locale: Locale,
             pattern: String,
-            expected: Byte
+            expected: Byte,
         ) {
             val result = ByteCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isSuccess)
@@ -44,7 +42,7 @@ class ByteCsvConverterTest {
         fun `deserialize should fail for invalid input`(
             strValue: String,
             locale: Locale,
-            pattern: String
+            pattern: String,
         ) {
             val result = ByteCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isFailure)
@@ -92,38 +90,40 @@ class ByteCsvConverterTest {
 
     companion object {
         @JvmStatic
-        fun deserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("1", Locale.US, "", 1.toByte()),
-            Arguments.of("-1", Locale.US, "", (-1).toByte()),
-            Arguments.of("127", Locale.US, "", 127.toByte()),
-            Arguments.of("-128", Locale.US, "", (-128).toByte()),
-            Arguments.of("1,27", Locale.US, "#,##", 127.toByte()),
-            Arguments.of("1.27", Locale.GERMANY, "#,##", 127.toByte()),
-            Arguments.of("127", Locale.US, "###;(###)", 127.toByte()),
-            Arguments.of("(127)", Locale.US, "###;(###)", (-127).toByte()),
-        )
+        fun deserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("1", Locale.US, "", 1.toByte()),
+                Arguments.of("-1", Locale.US, "", (-1).toByte()),
+                Arguments.of("127", Locale.US, "", 127.toByte()),
+                Arguments.of("-128", Locale.US, "", (-128).toByte()),
+                Arguments.of("1,27", Locale.US, "#,##", 127.toByte()),
+                Arguments.of("1.27", Locale.GERMANY, "#,##", 127.toByte()),
+                Arguments.of("127", Locale.US, "###;(###)", 127.toByte()),
+                Arguments.of("(127)", Locale.US, "###;(###)", (-127).toByte()),
+            )
 
         @JvmStatic
-        fun invalidDeserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("300", Locale.US, "#"),
-            Arguments.of("abc", Locale.US, "#"),
-            Arguments.of("12 7", Locale.US, "#"),
-            Arguments.of("1_27", Locale.US, "#"),
-            Arguments.of("127", Locale.US, "invalid.pattern"),
-        )
-
+        fun invalidDeserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("300", Locale.US, "#"),
+                Arguments.of("abc", Locale.US, "#"),
+                Arguments.of("12 7", Locale.US, "#"),
+                Arguments.of("1_27", Locale.US, "#"),
+                Arguments.of("127", Locale.US, "invalid.pattern"),
+            )
 
         @JvmStatic
-        fun serializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of(1, Locale.US, "", "1"),
-            Arguments.of(-1, Locale.US, "", "-1"),
-            Arguments.of(127, Locale.US, "", "127"),
-            Arguments.of(-128, Locale.US, "", "-128"),
-            Arguments.of(127, Locale.US, "#,###", "127"),
-            Arguments.of(127, Locale.US, "#,##", "1,27"),
-            Arguments.of(127, Locale.GERMANY, "#,##", "1.27"),
-            Arguments.of(127, Locale.US, "###;(###)", "127"),
-            Arguments.of(-127, Locale.US, "###;(###)", "(127)"),
-        )
+        fun serializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(1, Locale.US, "", "1"),
+                Arguments.of(-1, Locale.US, "", "-1"),
+                Arguments.of(127, Locale.US, "", "127"),
+                Arguments.of(-128, Locale.US, "", "-128"),
+                Arguments.of(127, Locale.US, "#,###", "127"),
+                Arguments.of(127, Locale.US, "#,##", "1,27"),
+                Arguments.of(127, Locale.GERMANY, "#,##", "1.27"),
+                Arguments.of(127, Locale.US, "###;(###)", "127"),
+                Arguments.of(-127, Locale.US, "###;(###)", "(127)"),
+            )
     }
 }

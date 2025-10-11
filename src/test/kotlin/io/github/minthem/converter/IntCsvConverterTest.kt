@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
-import java.util.*
+import java.util.Locale
 import java.util.stream.Stream
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,7 +14,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class IntCsvConverterTest {
-
     @Nested
     inner class DeserializeTest {
         @ParameterizedTest
@@ -31,7 +30,7 @@ class IntCsvConverterTest {
             strValue: String,
             locale: Locale,
             pattern: String,
-            expected: Int
+            expected: Int,
         ) {
             val result = IntCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isSuccess)
@@ -43,7 +42,7 @@ class IntCsvConverterTest {
         fun `deserialize should fail for invalid input`(
             strValue: String,
             locale: Locale,
-            pattern: String
+            pattern: String,
         ) {
             val result = IntCsvConverter.deserialize(strValue, locale, pattern)
             assertTrue(result.isFailure)
@@ -87,7 +86,7 @@ class IntCsvConverterTest {
             value: Int,
             locale: Locale,
             pattern: String,
-            expected: String
+            expected: String,
         ) {
             val result = IntCsvConverter.serialize(value, locale, pattern)
             assertTrue(result.isSuccess)
@@ -104,34 +103,37 @@ class IntCsvConverterTest {
 
     companion object {
         @JvmStatic
-        fun deserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("0", Locale.US, "", 0),
-            Arguments.of("123", Locale.US, "", 123),
-            Arguments.of("-456", Locale.US, "", -456),
-            Arguments.of("1,234", Locale.US, "#,###", 1234),
-            Arguments.of("12.345", Locale.GERMANY, "#,###", 12345),
-            Arguments.of("12345", Locale.US, "###;(###)", 12345),
-            Arguments.of("(12345)", Locale.US, "###;(###)", -12345),
-        )
+        fun deserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("0", Locale.US, "", 0),
+                Arguments.of("123", Locale.US, "", 123),
+                Arguments.of("-456", Locale.US, "", -456),
+                Arguments.of("1,234", Locale.US, "#,###", 1234),
+                Arguments.of("12.345", Locale.GERMANY, "#,###", 12345),
+                Arguments.of("12345", Locale.US, "###;(###)", 12345),
+                Arguments.of("(12345)", Locale.US, "###;(###)", -12345),
+            )
 
         @JvmStatic
-        fun invalidDeserializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of("abc", Locale.US, "#"),
-            Arguments.of("12 345", Locale.US, "#"),
-            Arguments.of("1_234", Locale.US, "#"),
-            Arguments.of("1234", Locale.US, "invalid.pattern"),
-        )
+        fun invalidDeserializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of("abc", Locale.US, "#"),
+                Arguments.of("12 345", Locale.US, "#"),
+                Arguments.of("1_234", Locale.US, "#"),
+                Arguments.of("1234", Locale.US, "invalid.pattern"),
+            )
 
         @JvmStatic
-        fun serializeProvider(): Stream<Arguments> = Stream.of(
-            Arguments.of(0, Locale.US, "", "0"),
-            Arguments.of(123, Locale.US, "", "123"),
-            Arguments.of(-456, Locale.US, "", "-456"),
-            Arguments.of(12345, Locale.US, "", "12345"),
-            Arguments.of(12345, Locale.US, "#,###", "12,345"),
-            Arguments.of(12345, Locale.GERMANY, "#,###", "12.345"),
-            Arguments.of(12345, Locale.US, "###;(###)", "12345"),
-            Arguments.of(-12345, Locale.US, "###;(###)", "(12345)"),
-        )
+        fun serializeProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(0, Locale.US, "", "0"),
+                Arguments.of(123, Locale.US, "", "123"),
+                Arguments.of(-456, Locale.US, "", "-456"),
+                Arguments.of(12345, Locale.US, "", "12345"),
+                Arguments.of(12345, Locale.US, "#,###", "12,345"),
+                Arguments.of(12345, Locale.GERMANY, "#,###", "12.345"),
+                Arguments.of(12345, Locale.US, "###;(###)", "12345"),
+                Arguments.of(-12345, Locale.US, "###;(###)", "(12345)"),
+            )
     }
 }

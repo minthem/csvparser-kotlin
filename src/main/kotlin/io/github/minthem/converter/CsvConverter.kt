@@ -11,13 +11,24 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.reflect.KClass
 
-
 interface CsvConverter<T> {
-    fun deserialize(value: String?, locale: Locale, pattern: String): Result<T?>
-    fun serialize(value: T?, locale: Locale, pattern: String): Result<String?>
+    fun deserialize(
+        value: String?,
+        locale: Locale,
+        pattern: String,
+    ): Result<T?>
+
+    fun serialize(
+        value: T?,
+        locale: Locale,
+        pattern: String,
+    ): Result<String?>
 }
 
-private fun getDecimalFormat(locale: Locale, pattern: String): DecimalFormat {
+private fun getDecimalFormat(
+    locale: Locale,
+    pattern: String,
+): DecimalFormat {
     val symbols = DecimalFormatSymbols(locale)
     return DecimalFormat(pattern, symbols).apply {
         isParseBigDecimal = true
@@ -28,7 +39,7 @@ internal fun <T : Number> convertNumber(
     type: KClass<T>,
     value: String,
     locale: Locale,
-    pattern: String
+    pattern: String,
 ): T {
     val trimmed = value.trim()
     val formatter = getDecimalFormat(locale, pattern)
@@ -39,12 +50,13 @@ internal fun <T : Number> convertNumber(
         throw NumberFormatException("Invalid number: \"$value\"")
     }
 
-    val rounded = if (pattern.isNotBlank()) {
-        val scale = formatter.maximumFractionDigits
-        parsed.setScale(scale, RoundingMode.HALF_UP)
-    } else {
-        parsed
-    }
+    val rounded =
+        if (pattern.isNotBlank()) {
+            val scale = formatter.maximumFractionDigits
+            parsed.setScale(scale, RoundingMode.HALF_UP)
+        } else {
+            parsed
+        }
 
     @Suppress("UNCHECKED_CAST")
     return try {
@@ -67,7 +79,7 @@ object IntCsvConverter : CsvConverter<Int> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<Int?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -78,7 +90,7 @@ object IntCsvConverter : CsvConverter<Int> {
     override fun serialize(
         value: Int?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
@@ -95,7 +107,7 @@ object LongCsvConverter : CsvConverter<Long> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<Long?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -106,7 +118,7 @@ object LongCsvConverter : CsvConverter<Long> {
     override fun serialize(
         value: Long?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
@@ -123,7 +135,7 @@ object ShortCsvConverter : CsvConverter<Short> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<Short?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -134,7 +146,7 @@ object ShortCsvConverter : CsvConverter<Short> {
     override fun serialize(
         value: Short?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
@@ -151,7 +163,7 @@ object ByteCsvConverter : CsvConverter<Byte> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<Byte?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -162,7 +174,7 @@ object ByteCsvConverter : CsvConverter<Byte> {
     override fun serialize(
         value: Byte?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
@@ -179,7 +191,7 @@ object FloatCsvConverter : CsvConverter<Float> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<Float?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -190,7 +202,7 @@ object FloatCsvConverter : CsvConverter<Float> {
     override fun serialize(
         value: Float?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
@@ -207,7 +219,7 @@ object DoubleCsvConverter : CsvConverter<Double> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<Double?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -218,7 +230,7 @@ object DoubleCsvConverter : CsvConverter<Double> {
     override fun serialize(
         value: Double?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
@@ -235,33 +247,39 @@ object StringCsvConverter : CsvConverter<String> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
-    ): Result<String?> {
-        return runCatching {
+        pattern: String,
+    ): Result<String?> =
+        runCatching {
             value
         }
-    }
 
     override fun serialize(
         value: String?,
         locale: Locale,
-        pattern: String
-    ): Result<String?> {
-        return runCatching {
+        pattern: String,
+    ): Result<String?> =
+        runCatching {
             value
         }
-    }
 }
 
 object BigDecimalCsvConverter : CsvConverter<BigDecimal> {
-    override fun deserialize(value: String?, locale: Locale, pattern: String): Result<BigDecimal?> {
+    override fun deserialize(
+        value: String?,
+        locale: Locale,
+        pattern: String,
+    ): Result<BigDecimal?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(BigDecimal::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(value: BigDecimal?, locale: Locale, pattern: String): Result<String?> {
+    override fun serialize(
+        value: BigDecimal?,
+        locale: Locale,
+        pattern: String,
+    ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
 
@@ -272,27 +290,35 @@ object BigDecimalCsvConverter : CsvConverter<BigDecimal> {
             }
         }
     }
-
 }
 
 object BooleanCsvConverter : CsvConverter<Boolean> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<Boolean?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
 
-            if(pattern.isBlank()) return@runCatching value.toBooleanStrictOrNull()
+            if (pattern.isBlank()) return@runCatching value.toBooleanStrictOrNull()
 
-            val (trueParts, falseParts) = pattern.split("|").let {
-                val trueValues =
-                    it.getOrNull(0)?.split(",")?.map { s -> s.trim() }?.toSet() ?: setOf("true")
-                val falseValues =
-                    it.getOrNull(1)?.split(",")?.map { s -> s.trim() }?.toSet() ?: setOf("false")
-                trueValues to falseValues
-            }
+            val (trueParts, falseParts) =
+                pattern.split("|").let {
+                    val trueValues =
+                        it
+                            .getOrNull(0)
+                            ?.split(",")
+                            ?.map { s -> s.trim() }
+                            ?.toSet() ?: setOf("true")
+                    val falseValues =
+                        it
+                            .getOrNull(1)
+                            ?.split(",")
+                            ?.map { s -> s.trim() }
+                            ?.toSet() ?: setOf("false")
+                    trueValues to falseValues
+                }
 
             val normalized = value.trim()
             when (normalized) {
@@ -314,18 +340,19 @@ object BooleanCsvConverter : CsvConverter<Boolean> {
     override fun serialize(
         value: Boolean?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
 
-            if(pattern.isBlank()) return@runCatching value.toString()
+            if (pattern.isBlank()) return@runCatching value.toString()
 
-            val (truePart, falsePart) = pattern.split("|").let {
-                val trueValue = it.getOrNull(0)?.split(",")?.map { s -> s.trim() } ?: listOf("true")
-                val falseValue = it.getOrNull(1)?.split(",")?.map { s -> s.trim() } ?: listOf("false")
-                trueValue to falseValue
-            }
+            val (truePart, falsePart) =
+                pattern.split("|").let {
+                    val trueValue = it.getOrNull(0)?.split(",")?.map { s -> s.trim() } ?: listOf("true")
+                    val falseValue = it.getOrNull(1)?.split(",")?.map { s -> s.trim() } ?: listOf("false")
+                    trueValue to falseValue
+                }
 
             if (value) truePart.first() else falsePart.first()
         }
@@ -336,7 +363,7 @@ object LocalDateCsvConverter : CsvConverter<LocalDate> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<LocalDate?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -347,7 +374,7 @@ object LocalDateCsvConverter : CsvConverter<LocalDate> {
     override fun serialize(
         value: LocalDate?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
@@ -360,7 +387,7 @@ object LocalDateTimeCsvConverter : CsvConverter<LocalDateTime> {
     override fun deserialize(
         value: String?,
         locale: Locale,
-        pattern: String
+        pattern: String,
     ): Result<LocalDateTime?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -368,7 +395,11 @@ object LocalDateTimeCsvConverter : CsvConverter<LocalDateTime> {
         }
     }
 
-    override fun serialize(value: LocalDateTime?, locale: Locale, pattern: String): Result<String?> {
+    override fun serialize(
+        value: LocalDateTime?,
+        locale: Locale,
+        pattern: String,
+    ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             DateTimeFormatter.ofPattern(pattern, locale).format(value)
