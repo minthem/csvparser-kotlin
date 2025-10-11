@@ -284,16 +284,30 @@ object BooleanCsvConverter : CsvConverter<Boolean> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
 
+            if(pattern.isBlank()) return@runCatching value.toBooleanStrictOrNull()
+
             val (trueParts, falseParts) = pattern.split("|").let {
                 val trueValues =
-                    it.getOrNull(0)?.split(",")?.map { s -> s.trim().lowercase() }?.toSet() ?: setOf("true")
+                    it.getOrNull(0)?.split(",")?.map { s -> s.trim() }?.toSet() ?: setOf("true")
                 val falseValues =
-                    it.getOrNull(1)?.split(",")?.map { s -> s.trim().lowercase() }?.toSet() ?: setOf("false")
+                    it.getOrNull(1)?.split(",")?.map { s -> s.trim() }?.toSet() ?: setOf("false")
                 trueValues to falseValues
             }
 
-            val normalized = value.trim().lowercase()
-            if (normalized in trueParts) true else normalized in falseParts
+            val normalized = value.trim()
+            when (normalized) {
+                in trueParts -> {
+                    true
+                }
+
+                in falseParts -> {
+                    false
+                }
+
+                else -> {
+                    throw IllegalArgumentException("Invalid boolean value: \"$value\" (trueValues: $trueParts, falseValues: $falseParts)")
+                }
+            }
         }
     }
 
@@ -304,6 +318,8 @@ object BooleanCsvConverter : CsvConverter<Boolean> {
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
+
+            if(pattern.isBlank()) return@runCatching value.toString()
 
             val (truePart, falsePart) = pattern.split("|").let {
                 val trueValue = it.getOrNull(0)?.split(",")?.map { s -> s.trim() } ?: listOf("true")
