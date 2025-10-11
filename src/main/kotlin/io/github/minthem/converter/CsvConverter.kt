@@ -242,9 +242,7 @@ object BigDecimalCsvConverter : CsvConverter<BigDecimal> {
             if (value == null) return@runCatching null
 
             if (pattern.isNotBlank()) {
-                val symbols = DecimalFormatSymbols(locale)
-                val formatter = DecimalFormat(pattern, symbols)
-                formatter.format(value)
+                getDecimalFormat(locale, pattern).format(value)
             } else {
                 value.toPlainString()
             }
