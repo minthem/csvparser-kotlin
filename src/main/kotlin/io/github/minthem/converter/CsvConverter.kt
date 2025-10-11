@@ -82,12 +82,16 @@ object IntCsvConverter : CsvConverter<Int> {
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
-            getDecimalFormat(locale, pattern).format(value)
+            if (pattern.isNotBlank()) {
+                getDecimalFormat(locale, pattern).format(value)
+            } else {
+                value.toString()
+            }
         }
     }
 }
 
-class LongCsvConverter : CsvConverter<Long> {
+object LongCsvConverter : CsvConverter<Long> {
     override fun deserialize(
         value: String?,
         locale: Locale,
@@ -106,12 +110,16 @@ class LongCsvConverter : CsvConverter<Long> {
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
-            getDecimalFormat(locale, pattern).format(value)
+            if (pattern.isNotBlank()) {
+                getDecimalFormat(locale, pattern).format(value)
+            } else {
+                value.toString()
+            }
         }
     }
 }
 
-class ShortCsvConverter : CsvConverter<Short> {
+object ShortCsvConverter : CsvConverter<Short> {
     override fun deserialize(
         value: String?,
         locale: Locale,
@@ -130,7 +138,11 @@ class ShortCsvConverter : CsvConverter<Short> {
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
-            getDecimalFormat(locale, pattern).format(value)
+            if (pattern.isNotBlank()) {
+                getDecimalFormat(locale, pattern).format(value)
+            } else {
+                value.toString()
+            }
         }
     }
 }
@@ -154,12 +166,16 @@ object ByteCsvConverter : CsvConverter<Byte> {
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
-            getDecimalFormat(locale, pattern).format(value)
+            if (pattern.isNotBlank()) {
+                getDecimalFormat(locale, pattern).format(value)
+            } else {
+                value.toString()
+            }
         }
     }
 }
 
-class FloatCsvConverter : CsvConverter<Float> {
+object FloatCsvConverter : CsvConverter<Float> {
     override fun deserialize(
         value: String?,
         locale: Locale,
@@ -178,12 +194,16 @@ class FloatCsvConverter : CsvConverter<Float> {
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
-            getDecimalFormat(locale, pattern).format(value)
+            if (pattern.isNotBlank()) {
+                getDecimalFormat(locale, pattern).format(value)
+            } else {
+                value.toString()
+            }
         }
     }
 }
 
-class DoubleCsvConverter : CsvConverter<Double> {
+object DoubleCsvConverter : CsvConverter<Double> {
     override fun deserialize(
         value: String?,
         locale: Locale,
@@ -202,12 +222,16 @@ class DoubleCsvConverter : CsvConverter<Double> {
     ): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
-            getDecimalFormat(locale, pattern).format(value)
+            if (pattern.isNotBlank()) {
+                getDecimalFormat(locale, pattern).format(value)
+            } else {
+                value.toString()
+            }
         }
     }
 }
 
-class StringCsvConverter : CsvConverter<String> {
+object StringCsvConverter : CsvConverter<String> {
     override fun deserialize(
         value: String?,
         locale: Locale,
@@ -251,7 +275,7 @@ object BigDecimalCsvConverter : CsvConverter<BigDecimal> {
 
 }
 
-class BooleanCsvConverter : CsvConverter<Boolean> {
+object BooleanCsvConverter : CsvConverter<Boolean> {
     override fun deserialize(
         value: String?,
         locale: Locale,
@@ -292,7 +316,7 @@ class BooleanCsvConverter : CsvConverter<Boolean> {
     }
 }
 
-class LocalDateCsvConverter : CsvConverter<LocalDate> {
+object LocalDateCsvConverter : CsvConverter<LocalDate> {
     override fun deserialize(
         value: String?,
         locale: Locale,
@@ -316,7 +340,7 @@ class LocalDateCsvConverter : CsvConverter<LocalDate> {
     }
 }
 
-class LocalDateTimeCsvConverter : CsvConverter<LocalDateTime> {
+object LocalDateTimeCsvConverter : CsvConverter<LocalDateTime> {
     override fun deserialize(
         value: String?,
         locale: Locale,
