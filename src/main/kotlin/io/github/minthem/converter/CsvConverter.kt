@@ -63,7 +63,7 @@ internal fun <T : Number> convertNumber(
     }
 }
 
-class IntCsvConverter : CsvConverter<Int> {
+object IntCsvConverter : CsvConverter<Int> {
     override fun deserialize(
         value: String?,
         locale: Locale,
