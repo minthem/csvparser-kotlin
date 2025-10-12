@@ -406,3 +406,23 @@ object LocalDateTimeCsvConverter : CsvConverter<LocalDateTime> {
         }
     }
 }
+
+object NoopCsvConverter : CsvConverter<Any?> {
+    override fun deserialize(
+        value: String?,
+        locale: Locale,
+        pattern: String,
+    ): Result<Any?> =
+        runCatching {
+            throw UnsupportedOperationException("NoopCsvConverter is not support deserialize")
+        }
+
+    override fun serialize(
+        value: Any?,
+        locale: Locale,
+        pattern: String
+    ): Result<String?> = runCatching {
+        throw UnsupportedOperationException("NoopCsvConverter is not support serialize")
+    }
+
+}
