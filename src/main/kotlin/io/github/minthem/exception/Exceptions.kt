@@ -1,5 +1,8 @@
 package io.github.minthem.exception
 
+import kotlin.reflect.KClass
+import kotlin.reflect.KType
+
 /**
  * Base exception type for csvparser.
  */
@@ -40,3 +43,55 @@ class CsvHeaderNotFoundException : CsvException("No header found")
 class CsvColumnNotFoundException(
     column: String,
 ) : CsvException("No such column: $column")
+
+open class CsvEntityException(
+    message: String,
+    cause: Throwable? = null,
+) : CsvException(
+    message,
+    cause,
+)
+
+class CsvEntityMappingException(
+    entityClass: KClass<*>,
+    detail: String,
+    cause: Throwable? = null,
+) : CsvEntityException("Failed to map CSV line to ${entityClass.simpleName}: $detail", cause)
+
+class CsvFieldNotFoundInHeaderException(
+    entityClass: KClass<*>,
+    paramName: String?,
+    columnName: String,
+) : CsvEntityException("Column '$columnName' for parameter '${paramName ?: "?"}' not found in header(entity: ${entityClass.simpleName})")
+
+class CsvFieldIndexOutOfRangeException(
+    entityClass: KClass<*>,
+    paramName: String?,
+    index: Int,
+    headerSize: Int? = null,
+) : CsvEntityException(
+    buildString {
+        append("Invalid column index $index for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})")
+        headerSize?.let { append(", header size: $it") }
+    }
+)
+
+class CsvFieldConvertException(
+    entityClass: KClass<*>,
+    paramName: String?,
+    columnName: String?,
+    columnIndex: Int,
+    cause: Throwable,
+) : CsvEntityException("Failed to convert column '${columnName ?: "none"}'(index $columnIndex) for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})", cause)
+
+class CsvUnsupportedTypeException(
+    entityClass: KClass<*>,
+    paramName: String?,
+    type: KType
+) : CsvEntityException("Unsupported type '${type}' for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})")
+
+class CsvEntityConstructionException(
+    entityClass: KClass<*>,
+    detail: String,
+    cause: Throwable? = null,
+) : CsvEntityException("Failed to construct entity '${entityClass.simpleName}': $detail", cause)
