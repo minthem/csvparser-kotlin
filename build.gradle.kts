@@ -48,6 +48,7 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.koverHtmlReport)
 }
 
 mavenPublishing {
