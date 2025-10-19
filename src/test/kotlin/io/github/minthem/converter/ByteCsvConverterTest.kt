@@ -19,7 +19,8 @@ class ByteCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val result = ByteCsvConverter.deserialize(source, Locale.US, "")
+            val converter = ByteCsvConverter(Locale.US, "")
+            val result = converter.deserialize(source)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }
@@ -32,7 +33,8 @@ class ByteCsvConverterTest {
             pattern: String,
             expected: Byte,
         ) {
-            val result = ByteCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = ByteCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
@@ -44,27 +46,31 @@ class ByteCsvConverterTest {
             locale: Locale,
             pattern: String,
         ) {
-            val result = ByteCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = ByteCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @ParameterizedTest
         @ValueSource(strings = ["128", "-129"])
         fun `deserialize should fail for out of range values`(strValue: String) {
-            val result = ByteCsvConverter.deserialize(strValue, Locale.US, "#")
+            val converter = ByteCsvConverter(Locale.US, "#")
+            val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should trim whitespaces`() {
-            val result = ByteCsvConverter.deserialize("   127   ", Locale.US, "#")
+            val converter = ByteCsvConverter(Locale.US, "#")
+            val result = converter.deserialize("   127   ")
             assertTrue(result.isSuccess)
             assertEquals(127.toByte(), result.getOrNull())
         }
 
         @Test
         fun `deserialize should accept non-grouped number even if pattern uses grouping`() {
-            val result = ByteCsvConverter.deserialize("127", Locale.US, "#,##")
+            val converter = ByteCsvConverter(Locale.US, "#,##")
+            val result = converter.deserialize("127")
             assertTrue(result.isSuccess)
             assertEquals(127.toByte(), result.getOrNull())
         }
@@ -75,14 +81,16 @@ class ByteCsvConverterTest {
         @ParameterizedTest
         @MethodSource("io.github.minthem.converter.ByteCsvConverterTest#serializeProvider")
         fun `serialize should return plain string`() {
-            val result = ByteCsvConverter.serialize(127, Locale.US, "")
+            val converter = ByteCsvConverter(Locale.US, "")
+            val result = converter.serialize(127)
             assertTrue(result.isSuccess)
             assertEquals("127", result.getOrNull())
         }
 
         @Test
         fun `serialize should return null when value is null`() {
-            val result = ByteCsvConverter.serialize(null, Locale.US, "")
+            val converter = ByteCsvConverter(Locale.US, "")
+            val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }

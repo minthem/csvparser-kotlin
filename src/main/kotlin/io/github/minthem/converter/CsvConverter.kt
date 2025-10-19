@@ -12,18 +12,15 @@ import java.util.Locale
 import kotlin.reflect.KClass
 
 interface CsvConverter<T> {
-    fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<T?>
+    fun deserialize(value: String?): Result<T?>
 
-    fun serialize(
-        value: T?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?>
+    fun serialize(value: T?): Result<String?>
 }
+
+abstract class AbstractCsvConverter<T>(
+    protected val locale: Locale,
+    protected val pattern: String,
+) : CsvConverter<T>
 
 private fun getDecimalFormat(
     locale: Locale,
@@ -75,23 +72,18 @@ internal fun <T : Number> convertNumber(
     }
 }
 
-object IntCsvConverter : CsvConverter<Int> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Int?> {
+class IntCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "#",
+) : AbstractCsvConverter<Int>(locale, pattern) {
+    override fun deserialize(value: String?): Result<Int?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(Int::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(
-        value: Int?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: Int?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             if (pattern.isNotBlank()) {
@@ -103,23 +95,18 @@ object IntCsvConverter : CsvConverter<Int> {
     }
 }
 
-object LongCsvConverter : CsvConverter<Long> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Long?> {
+class LongCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "#",
+) : AbstractCsvConverter<Long>(locale, pattern) {
+    override fun deserialize(value: String?): Result<Long?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(Long::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(
-        value: Long?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: Long?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             if (pattern.isNotBlank()) {
@@ -131,23 +118,18 @@ object LongCsvConverter : CsvConverter<Long> {
     }
 }
 
-object ShortCsvConverter : CsvConverter<Short> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Short?> {
+class ShortCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "#",
+) : AbstractCsvConverter<Short>(locale, pattern) {
+    override fun deserialize(value: String?): Result<Short?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(Short::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(
-        value: Short?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: Short?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             if (pattern.isNotBlank()) {
@@ -159,23 +141,18 @@ object ShortCsvConverter : CsvConverter<Short> {
     }
 }
 
-object ByteCsvConverter : CsvConverter<Byte> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Byte?> {
+class ByteCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "#",
+) : AbstractCsvConverter<Byte>(locale, pattern) {
+    override fun deserialize(value: String?): Result<Byte?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(Byte::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(
-        value: Byte?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: Byte?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             if (pattern.isNotBlank()) {
@@ -187,23 +164,18 @@ object ByteCsvConverter : CsvConverter<Byte> {
     }
 }
 
-object FloatCsvConverter : CsvConverter<Float> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Float?> {
+class FloatCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "#.###",
+) : AbstractCsvConverter<Float>(locale, pattern) {
+    override fun deserialize(value: String?): Result<Float?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(Float::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(
-        value: Float?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: Float?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             if (pattern.isNotBlank()) {
@@ -215,23 +187,18 @@ object FloatCsvConverter : CsvConverter<Float> {
     }
 }
 
-object DoubleCsvConverter : CsvConverter<Double> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Double?> {
+class DoubleCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "#.######",
+) : AbstractCsvConverter<Double>(locale, pattern) {
+    override fun deserialize(value: String?): Result<Double?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(Double::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(
-        value: Double?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: Double?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             if (pattern.isNotBlank()) {
@@ -243,43 +210,31 @@ object DoubleCsvConverter : CsvConverter<Double> {
     }
 }
 
-object StringCsvConverter : CsvConverter<String> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> =
+class StringCsvConverter(
+) : CsvConverter<String> {
+    override fun deserialize(value: String?): Result<String?> =
         runCatching {
             value
         }
 
-    override fun serialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> =
+    override fun serialize(value: String?): Result<String?> =
         runCatching {
             value
         }
 }
 
-object BigDecimalCsvConverter : CsvConverter<BigDecimal> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<BigDecimal?> {
+class BigDecimalCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "#.###########",
+) : AbstractCsvConverter<BigDecimal>(locale, pattern) {
+    override fun deserialize(value: String?): Result<BigDecimal?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             convertNumber(BigDecimal::class, value, locale, pattern)
         }
     }
 
-    override fun serialize(
-        value: BigDecimal?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: BigDecimal?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
 
@@ -292,90 +247,18 @@ object BigDecimalCsvConverter : CsvConverter<BigDecimal> {
     }
 }
 
-object BooleanCsvConverter : CsvConverter<Boolean> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Boolean?> {
-        return runCatching {
-            if (value.isNullOrBlank()) return@runCatching null
-
-            if (pattern.isBlank()) return@runCatching value.toBooleanStrictOrNull()
-
-            val (trueParts, falseParts) =
-                pattern.split("|").let {
-                    val trueValues =
-                        it
-                            .getOrNull(0)
-                            ?.split(",")
-                            ?.map { s -> s.trim() }
-                            ?.toSet() ?: setOf("true")
-                    val falseValues =
-                        it
-                            .getOrNull(1)
-                            ?.split(",")
-                            ?.map { s -> s.trim() }
-                            ?.toSet() ?: setOf("false")
-                    trueValues to falseValues
-                }
-
-            val normalized = value.trim()
-            when (normalized) {
-                in trueParts -> {
-                    true
-                }
-
-                in falseParts -> {
-                    false
-                }
-
-                else -> {
-                    throw IllegalArgumentException("Invalid boolean value: \"$value\" (trueValues: $trueParts, falseValues: $falseParts)")
-                }
-            }
-        }
-    }
-
-    override fun serialize(
-        value: Boolean?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
-        return runCatching {
-            if (value == null) return@runCatching null
-
-            if (pattern.isBlank()) return@runCatching value.toString()
-
-            val (truePart, falsePart) =
-                pattern.split("|").let {
-                    val trueValue = it.getOrNull(0)?.split(",")?.map { s -> s.trim() } ?: listOf("true")
-                    val falseValue = it.getOrNull(1)?.split(",")?.map { s -> s.trim() } ?: listOf("false")
-                    trueValue to falseValue
-                }
-
-            if (value) truePart.first() else falsePart.first()
-        }
-    }
-}
-
-object LocalDateCsvConverter : CsvConverter<LocalDate> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<LocalDate?> {
+class LocalDateCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "YYYY-MM-dd",
+) : AbstractCsvConverter<LocalDate>(locale, pattern) {
+    override fun deserialize(value: String?): Result<LocalDate?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             DateTimeFormatter.ofPattern(pattern, locale)?.parse(value.trim(), LocalDate::from)
         }
     }
 
-    override fun serialize(
-        value: LocalDate?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: LocalDate?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             DateTimeFormatter.ofPattern(pattern, locale).format(value)
@@ -383,23 +266,18 @@ object LocalDateCsvConverter : CsvConverter<LocalDate> {
     }
 }
 
-object LocalDateTimeCsvConverter : CsvConverter<LocalDateTime> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<LocalDateTime?> {
+class LocalDateTimeCsvConverter(
+    locale: Locale = Locale.getDefault(),
+    pattern: String = "YYYY-MM-dd HH:mm:ss",
+) : AbstractCsvConverter<LocalDateTime>(locale, pattern) {
+    override fun deserialize(value: String?): Result<LocalDateTime?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
             DateTimeFormatter.ofPattern(pattern, locale)?.parse(value.trim(), LocalDateTime::from)
         }
     }
 
-    override fun serialize(
-        value: LocalDateTime?,
-        locale: Locale,
-        pattern: String,
-    ): Result<String?> {
+    override fun serialize(value: LocalDateTime?): Result<String?> {
         return runCatching {
             if (value == null) return@runCatching null
             DateTimeFormatter.ofPattern(pattern, locale).format(value)
@@ -407,22 +285,40 @@ object LocalDateTimeCsvConverter : CsvConverter<LocalDateTime> {
     }
 }
 
-object NoopCsvConverter : CsvConverter<Any?> {
-    override fun deserialize(
-        value: String?,
-        locale: Locale,
-        pattern: String,
-    ): Result<Any?> =
-        runCatching {
-            throw UnsupportedOperationException("NoopCsvConverter is not support deserialize")
-        }
+class BooleanCsvConverter(
+    private val trueValues: List<String> = listOf("true", "yes", "ok"),
+    private val falseValues: List<String> = listOf("false", "no", "bad"),
+    private val caseSensitive: Boolean = true,
+) : CsvConverter<Boolean> {
+    override fun deserialize(value: String?): Result<Boolean?> {
+        return runCatching {
+            if (value.isNullOrBlank()) return@runCatching null
 
-    override fun serialize(
-        value: Any?,
-        locale: Locale,
-        pattern: String
-    ): Result<String?> = runCatching {
-        throw UnsupportedOperationException("NoopCsvConverter is not support serialize")
+            val normalized = if(caseSensitive) value.trim() else value.trim().lowercase()
+
+            if (trueValues.isEmpty() && falseValues.isEmpty()) {
+                return@runCatching normalized.toBooleanStrictOrNull()
+            }
+
+            val trueVals = if(caseSensitive) trueValues else trueValues.map { it.lowercase() }
+            val falseVals = if(caseSensitive) falseValues else falseValues.map { it.lowercase() }
+
+            when (normalized) {
+                in trueVals -> true
+                in falseVals -> false
+                else -> throw IllegalArgumentException(
+                    "Invalid boolean value: \"$value\" (trueValues: $trueValues, falseValues: $falseValues, caseSensitive=true)",
+                )
+            }
+        }
     }
 
+    override fun serialize(value: Boolean?): Result<String?> {
+        return runCatching {
+            if (value == null) return@runCatching null
+            if (trueValues.isEmpty() && falseValues.isEmpty()) return@runCatching value.toString()
+
+            if (value) trueValues.first() else falseValues.first()
+        }
+    }
 }

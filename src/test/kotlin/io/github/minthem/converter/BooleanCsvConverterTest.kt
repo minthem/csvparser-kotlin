@@ -2,9 +2,9 @@ package io.github.minthem.converter
 
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.NullAndEmptySource
-import java.util.Locale
 import java.util.stream.Stream
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -12,97 +12,219 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BooleanCsvConverterTest {
+
     @Nested
-    inner class DeserializeTest {
-        @ParameterizedTest
-        @NullAndEmptySource
-        fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val result = BooleanCsvConverter.deserialize(source, Locale.getDefault(), "yes,true|no,false")
-            assertTrue(result.isSuccess)
-            assertNull(result.getOrNull())
+    inner class CaseSensitiveTest {
+        @Nested
+        inner class DeserializeTest {
+            @ParameterizedTest
+            @NullAndEmptySource
+            fun `deserialize should return null for null or blank inputs`(source: String?) {
+                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"))
+                val result = converter.deserialize(source)
+                assertTrue(result.isSuccess)
+                assertNull(result.getOrNull())
+            }
+
+            @ParameterizedTest
+            @MethodSource("io.github.minthem.converter.BooleanCsvConverterTest#truthyFalsyCaseSensitiveProvider")
+            fun `deserialize should respect true or false patterns (case-sensitive)`(
+                input: String,
+                trueValues: List<String>,
+                falseValues: List<String>,
+                expected: Boolean,
+            ) {
+                val converter = BooleanCsvConverter(trueValues, falseValues)
+                val result = converter.deserialize(input)
+                assertTrue(result.isSuccess)
+                assertEquals(expected, result.getOrNull())
+            }
+
+            @Test
+            fun `deserialize should use default exact tokens when none provided`() {
+                val converter = BooleanCsvConverter(emptyList(), emptyList())
+                val t = converter.deserialize("true")
+                val f = converter.deserialize("false")
+                assertTrue(t.isSuccess)
+                assertEquals(true, t.getOrNull())
+                assertTrue(f.isSuccess)
+                assertEquals(false, f.getOrNull())
+            }
+
+            @Test
+            fun `deserialize should fail when input not in either set`() {
+                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"))
+                val result = converter.deserialize("maybe")
+                assertTrue(result.isFailure)
+            }
         }
 
-        @ParameterizedTest
-        @MethodSource("io.github.minthem.converter.BooleanCsvConverterTest#truthyFalsyProvider")
-        fun `deserialize should respect true or false patterns (case-sensitive)`(
-            input: String,
-            pattern: String,
-            expected: Boolean,
-        ) {
-            val result = BooleanCsvConverter.deserialize(input, Locale.getDefault(), pattern)
-            assertTrue(result.isSuccess)
-            assertEquals(expected, result.getOrNull())
-        }
+        @Nested
+        inner class SerializeTest {
+            @ParameterizedTest
+            @MethodSource("io.github.minthem.converter.BooleanCsvConverterTest#serializeCaseSensitiveProvider")
+            fun `serialize should pick first token of true or false side`(
+                value: Boolean,
+                trueValues: List<String>,
+                falseValues: List<String>,
+                expected: String,
+            ) {
+                val converter = BooleanCsvConverter(trueValues, falseValues)
+                val result = converter.serialize(value)
+                assertTrue(result.isSuccess)
+                assertEquals(expected, result.getOrNull())
+            }
 
-        @Test
-        fun `deserialize should use default exact tokens when none provided`() {
-            val t = BooleanCsvConverter.deserialize("true", Locale.getDefault(), "")
-            val f = BooleanCsvConverter.deserialize("false", Locale.getDefault(), "")
-            assertTrue(t.isSuccess)
-            assertEquals(true, t.getOrNull())
-            assertTrue(f.isSuccess)
-            assertEquals(false, f.getOrNull())
-        }
-
-        @Test
-        fun `deserialize should fail when input not in either set`() {
-            val result = BooleanCsvConverter.deserialize("maybe", Locale.getDefault(), "yes,true|no,false")
-            assertTrue(result.isFailure)
+            @Test
+            fun `serialize should return null when value is null`() {
+                val converter = BooleanCsvConverter(emptyList(), emptyList())
+                val result = converter.serialize(null)
+                assertTrue(result.isSuccess)
+                assertNull(result.getOrNull())
+            }
         }
     }
 
     @Nested
-    inner class SerializeTest {
-        @ParameterizedTest
-        @MethodSource("io.github.minthem.converter.BooleanCsvConverterTest#serializeProvider")
-        fun `serialize should pick first token of true or false side`(
-            value: Boolean,
-            pattern: String,
-            expected: String,
-        ) {
-            val result = BooleanCsvConverter.serialize(value, Locale.getDefault(), pattern)
-            assertTrue(result.isSuccess)
-            assertEquals(expected, result.getOrNull())
+    inner class CaseInsensitiveTest {
+        @Nested
+        inner class DeserializeTest {
+            @ParameterizedTest
+            @NullAndEmptySource
+            fun `deserialize should return null for null or blank inputs`(source: String?) {
+                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"), false)
+                val result = converter.deserialize(source)
+                assertTrue(result.isSuccess)
+                assertNull(result.getOrNull())
+            }
+
+            @ParameterizedTest
+            @MethodSource("io.github.minthem.converter.BooleanCsvConverterTest#truthyFalsyCaseInsensitiveProvider")
+            fun `deserialize should respect true or false patterns (case-insensitive)`(
+                input: String,
+                trueValues: List<String>,
+                falseValues: List<String>,
+                expected: Boolean,
+            ) {
+                val converter = BooleanCsvConverter(trueValues, falseValues, false)
+                val result = converter.deserialize(input)
+                assertTrue(result.isSuccess)
+                assertEquals(expected, result.getOrNull())
+            }
+
+            @Test
+            fun `deserialize should accept default tokens regardless of case when none provided`() {
+                val converter = BooleanCsvConverter(emptyList(), emptyList(), false)
+                val t = converter.deserialize("TrUe")
+                val f = converter.deserialize("FaLsE")
+                assertTrue(t.isSuccess)
+                assertEquals(true, t.getOrNull())
+                assertTrue(f.isSuccess)
+                assertEquals(false, f.getOrNull())
+            }
+
+            @Test
+            fun `deserialize should fail when input not in either set`() {
+                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"), false)
+                val result = converter.deserialize("maybe")
+                assertTrue(result.isFailure)
+            }
         }
 
-        @Test
-        fun `serialize should return null when value is null`() {
-            val result = BooleanCsvConverter.serialize(null, Locale.getDefault(), "")
-            assertTrue(result.isSuccess)
-            assertNull(result.getOrNull())
+        @Nested
+        inner class SerializeTest {
+            @ParameterizedTest
+            @MethodSource("io.github.minthem.converter.BooleanCsvConverterTest#serializeCaseInsensitiveProvider")
+            fun `serialize should pick first token of true or false side`(
+                value: Boolean,
+                trueValues: List<String>,
+                falseValues: List<String>,
+                expected: String,
+            ) {
+                val converter = BooleanCsvConverter(trueValues, falseValues, false)
+                val result = converter.serialize(value)
+                assertTrue(result.isSuccess)
+                assertEquals(expected, result.getOrNull())
+            }
+
+            @Test
+            fun `serialize should return null when value is null`() {
+                val converter = BooleanCsvConverter(emptyList(), emptyList(), false)
+                val result = converter.serialize(null)
+                assertTrue(result.isSuccess)
+                assertNull(result.getOrNull())
+            }
         }
     }
 
     companion object {
         @JvmStatic
-        fun truthyFalsyProvider(): Stream<org.junit.jupiter.params.provider.Arguments> =
+        fun truthyFalsyCaseSensitiveProvider(): Stream<Arguments> =
             Stream.of(
-                org.junit.jupiter.params.provider.Arguments
-                    .of("yes", "yes,true|no,false", true),
-                org.junit.jupiter.params.provider.Arguments
-                    .of("no", "yes,true|no,false", false),
+                Arguments
+                    .of("yes", listOf("yes", "true"), listOf("no", "false"), true),
+                Arguments
+                    .of("no", listOf("yes", "true"), listOf("no", "false"), false),
                 // different sets
-                org.junit.jupiter.params.provider.Arguments
-                    .of("on", "on,yes,true|off,no,false", true),
-                org.junit.jupiter.params.provider.Arguments
-                    .of("off", "on,yes,true|off,no,false", false),
+                Arguments
+                    .of(
+                        "on",
+                        listOf("on", "yes", "true"),
+                        listOf("off", "no", "false"),
+                        true,
+                    ),
+                Arguments
+                    .of("off", listOf("on", "yes", "true"), listOf("off", "no", "false"), false),
             )
 
         @JvmStatic
-        fun serializeProvider(): Stream<org.junit.jupiter.params.provider.Arguments> =
+        fun serializeCaseSensitiveProvider(): Stream<Arguments> =
             Stream.of(
-                org.junit.jupiter.params.provider.Arguments
-                    .of(true, "", "true"),
-                org.junit.jupiter.params.provider.Arguments
-                    .of(false, "", "false"),
-                org.junit.jupiter.params.provider.Arguments
-                    .of(true, "Y,Yes|N,No", "Y"),
-                org.junit.jupiter.params.provider.Arguments
-                    .of(false, "Y,Yes|N,No", "N"),
-                org.junit.jupiter.params.provider.Arguments
-                    .of(true, "はい,真|いいえ,偽", "はい"),
-                org.junit.jupiter.params.provider.Arguments
-                    .of(false, "はい,真|いいえ,偽", "いいえ"),
+                Arguments
+                    .of(true, listOf("true"), listOf("false"), "true"),
+                Arguments
+                    .of(false, listOf("true"), listOf("false"), "false"),
+                Arguments
+                    .of(true, listOf("Y", "Yes"), listOf("N", "No"), "Y"),
+                Arguments
+                    .of(false, listOf("Y", "Yes"), listOf("N", "No"), "N"),
+                Arguments
+                    .of(true, listOf("はい", "真"), listOf("いいえ", "偽"), "はい"),
+                Arguments
+                    .of(false, listOf("はい", "真"), listOf("いいえ", "偽"), "いいえ"),
+            )
+
+        @JvmStatic
+        fun truthyFalsyCaseInsensitiveProvider(): Stream<Arguments> =
+            Stream.of(
+                // case-insensitive checks
+                Arguments
+                    .of("YES", listOf("yes", "true"), listOf("no", "false"), true),
+                Arguments
+                    .of("No", listOf("yes", "true"), listOf("no", "false"), false),
+                // different sets with mixed case inputs
+                Arguments
+                    .of("On", listOf("on", "yes", "true"), listOf("off", "no", "false"), true),
+                Arguments
+                    .of("OFF", listOf("on", "yes", "true"), listOf("off", "no", "false"), false),
+            )
+
+        @JvmStatic
+        fun serializeCaseInsensitiveProvider(): Stream<Arguments> =
+            Stream.of(
+                Arguments
+                    .of(true, listOf("true"), listOf("false"), "true"),
+                Arguments
+                    .of(false, listOf("true"), listOf("false"), "false"),
+                Arguments
+                    .of(true, listOf("Y", "Yes"), listOf("N", "No"), "Y"),
+                Arguments
+                    .of(false, listOf("Y", "Yes"), listOf("N", "No"), "N"),
+                Arguments
+                    .of(true, listOf("はい", "真"), listOf("いいえ", "偽"), "はい"),
+                Arguments
+                    .of(false, listOf("はい", "真"), listOf("いいえ", "偽"), "いいえ"),
             )
     }
 }
+

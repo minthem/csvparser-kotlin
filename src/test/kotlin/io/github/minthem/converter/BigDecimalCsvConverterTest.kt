@@ -22,7 +22,8 @@ class BigDecimalCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val result1 = BigDecimalCsvConverter.deserialize(source, Locale.US, "")
+            val converter = BigDecimalCsvConverter(Locale.US, "")
+            val result1 = converter.deserialize(source)
             assertTrue(result1.isSuccess)
             assertNull(result1.getOrNull())
         }
@@ -35,7 +36,8 @@ class BigDecimalCsvConverterTest {
             pattern: String,
             expected: BigDecimal,
         ) {
-            val result = BigDecimalCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = BigDecimalCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
@@ -47,25 +49,29 @@ class BigDecimalCsvConverterTest {
             locale: Locale,
             pattern: String,
         ) {
-            val result = BigDecimalCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = BigDecimalCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should fail with incorrect locale specific format`() {
-            val result = BigDecimalCsvConverter.deserialize("12,345.67", Locale.GERMANY, "#,##0.##")
+            val converter = BigDecimalCsvConverter(Locale.GERMANY, "#,##0.##")
+            val result = converter.deserialize("12,345.67")
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should fail when separators don't match locale`() {
-            val result = BigDecimalCsvConverter.deserialize("12.345,67", Locale.US, "#,##0.##")
+            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.##")
+            val result = converter.deserialize("12.345,67")
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should trim whitespaces`() {
-            val result = BigDecimalCsvConverter.deserialize("   12,345.678   ", Locale.US, "#,##0.###")
+            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.###")
+            val result = converter.deserialize("   12,345.678   ")
             assertTrue(result.isSuccess)
             assertEquals(BigDecimal("12345.678"), result.getOrNull())
         }
@@ -77,14 +83,16 @@ class BigDecimalCsvConverterTest {
             pattern: String,
             expected: BigDecimal,
         ) {
-            val result = BigDecimalCsvConverter.deserialize(strValue, Locale.US, pattern)
+            val converter = BigDecimalCsvConverter(Locale.US, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
 
         @Test
         fun `deserialize should accept non-grouped number even if pattern uses grouping`() {
-            val result = BigDecimalCsvConverter.deserialize("12345.678", Locale.US, "#,##0.###")
+            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.###")
+            val result = converter.deserialize("12345.678")
             assertTrue(result.isSuccess)
             assertEquals(BigDecimal("12345.678"), result.getOrNull())
         }
@@ -100,21 +108,24 @@ class BigDecimalCsvConverterTest {
             pattern: String,
             expected: String,
         ) {
-            val result = BigDecimalCsvConverter.serialize(bdValue, locale, pattern)
+            val converter = BigDecimalCsvConverter(locale, pattern)
+            val result = converter.serialize(bdValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
 
         @Test
         fun `serialize should format BigDecimal with a pattern`() {
-            val result = BigDecimalCsvConverter.serialize(BigDecimal("12345.678"), Locale.US, "#,##0.00")
+            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.00")
+            val result = converter.serialize(BigDecimal("12345.678"))
             assertTrue(result.isSuccess)
             assertEquals("12,345.68", result.getOrNull())
         }
 
         @Test
         fun `serialize should return null when value is null`() {
-            val result = BigDecimalCsvConverter.serialize(null, Locale.US, "")
+            val converter = BigDecimalCsvConverter(Locale.US, "")
+            val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }

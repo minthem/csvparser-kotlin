@@ -19,7 +19,8 @@ class ShortCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val result = ShortCsvConverter.deserialize(source, Locale.US, "")
+            val converter = ShortCsvConverter(Locale.US, "")
+            val result = converter.deserialize(source)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }
@@ -32,7 +33,8 @@ class ShortCsvConverterTest {
             pattern: String,
             expected: Short,
         ) {
-            val result = ShortCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = ShortCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
@@ -44,14 +46,16 @@ class ShortCsvConverterTest {
             locale: Locale,
             pattern: String,
         ) {
-            val result = ShortCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = ShortCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @ParameterizedTest
         @ValueSource(strings = ["32767", "-32768"])
         fun `deserialize should accept Short max and min values`(strValue: String) {
-            val result = ShortCsvConverter.deserialize(strValue, Locale.US, "#")
+            val converter = ShortCsvConverter(Locale.US, "#")
+            val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(strValue.toShort(), result.getOrNull())
         }
@@ -59,20 +63,23 @@ class ShortCsvConverterTest {
         @ParameterizedTest
         @ValueSource(strings = ["32768", "-32769"])
         fun `deserialize should fail for out of range values`(strValue: String) {
-            val result = ShortCsvConverter.deserialize(strValue, Locale.US, "#")
+            val converter = ShortCsvConverter(Locale.US, "#")
+            val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should trim whitespaces`() {
-            val result = ShortCsvConverter.deserialize("   123   ", Locale.US, "#")
+            val converter = ShortCsvConverter(Locale.US, "#")
+            val result = converter.deserialize("   123   ")
             assertTrue(result.isSuccess)
             assertEquals(123.toShort(), result.getOrNull())
         }
 
         @Test
         fun `deserialize should accept non-grouped number even if pattern uses grouping`() {
-            val result = ShortCsvConverter.deserialize("1234", Locale.US, "#,###")
+            val converter = ShortCsvConverter(Locale.US, "#,###")
+            val result = converter.deserialize("1234")
             assertTrue(result.isSuccess)
             assertEquals(1234.toShort(), result.getOrNull())
         }
@@ -88,14 +95,16 @@ class ShortCsvConverterTest {
             pattern: String,
             expected: String,
         ) {
-            val result = ShortCsvConverter.serialize(value, locale, pattern)
+            val converter = ShortCsvConverter(locale, pattern)
+            val result = converter.serialize(value)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
 
         @Test
         fun `serialize should return null when value is null`() {
-            val result = ShortCsvConverter.serialize(null, Locale.US, "")
+            val converter = ShortCsvConverter(Locale.US, "")
+            val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }
