@@ -3,7 +3,6 @@ package io.github.minthem.converter
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.NullAndEmptySource
-import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -15,14 +14,16 @@ class StringCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val result = StringCsvConverter.deserialize(source, Locale.US, "")
+            val converter = StringCsvConverter()
+            val result = converter.deserialize(source)
             assertTrue(result.isSuccess)
             assertEquals(source, result.getOrNull())
         }
 
         @Test
         fun `deserialize should return the original string when non-blank`() {
-            val result = StringCsvConverter.deserialize("test string", Locale.US, "")
+            val converter = StringCsvConverter()
+            val result = converter.deserialize("test string")
             assertTrue(result.isSuccess)
             assertEquals("test string", result.getOrNull())
         }
@@ -32,14 +33,16 @@ class StringCsvConverterTest {
     inner class SerializeTest {
         @Test
         fun `serialize should return the original string`() {
-            val result = StringCsvConverter.serialize("output string", Locale.US, "")
+            val converter = StringCsvConverter()
+            val result = converter.serialize("output string")
             assertTrue(result.isSuccess)
             assertEquals("output string", result.getOrNull())
         }
 
         @Test
         fun `serialize should return null when value is null`() {
-            val result = StringCsvConverter.serialize(null, Locale.US, "")
+            val converter = StringCsvConverter()
+            val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }

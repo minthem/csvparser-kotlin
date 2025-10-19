@@ -3,9 +3,8 @@ import com.vanniktech.maven.publish.KotlinJvm
 import kotlinx.kover.gradle.plugin.dsl.AggregationType
 import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 import kotlinx.kover.gradle.plugin.dsl.GroupingEntityType
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
     kotlin("jvm") version "2.2.10"
@@ -49,6 +48,7 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.koverHtmlReport)
 }
 
 mavenPublishing {

@@ -1,7 +1,5 @@
 package io.github.minthem.annotation
 
-import io.github.minthem.converter.LocalDateTimeCsvConverter
-import io.github.minthem.converter.NoopCsvConverter
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -12,22 +10,18 @@ import kotlin.test.assertNotNull
 data class Sample(
     @CsvField(name = "id", index = 0)
     val id: Int,
-
     @CsvFieldFormat(pattern = "yyyy-MM-dd", locale = "en_US")
     @CsvField(name = "date")
     val date: LocalDate,
-
     @CsvFieldFormat(pattern = "yyyy-MM-dd'T'HH:MM:SS")
-    @CsvField(index = 2, converter = LocalDateTimeCsvConverter::class)
+    @CsvField(index = 2)
     val datetime: LocalDateTime,
-
     @BooleanCsvField(ignoreCase = false)
     @CsvField(name = "active", index = 3)
-    val active: Boolean
+    val active: Boolean,
 )
 
 class CsvAnnotationTest {
-
     @Test
     fun `id property should have correct CsvField annotation`() {
         val prop = Sample::class.members.first { it.name == "id" }
@@ -36,7 +30,6 @@ class CsvAnnotationTest {
         assertNotNull(ann)
         assertEquals("id", ann.name)
         assertEquals(0, ann.index)
-        assertEquals(NoopCsvConverter::class, ann.converter)
     }
 
     @Test
@@ -48,7 +41,6 @@ class CsvAnnotationTest {
         assertNotNull(annField)
         assertEquals("date", annField.name)
         assertEquals(-1, annField.index)
-        assertEquals(NoopCsvConverter::class, annField.converter)
 
         assertNotNull(annFormat)
         assertEquals("yyyy-MM-dd", annFormat.pattern)
@@ -64,7 +56,6 @@ class CsvAnnotationTest {
         assertNotNull(annField)
         assertEquals("", annField.name)
         assertEquals(2, annField.index)
-        assertEquals(LocalDateTimeCsvConverter::class, annField.converter)
 
         assertNotNull(annFormat)
         assertEquals("yyyy-MM-dd'T'HH:MM:SS", annFormat.pattern)
@@ -80,7 +71,6 @@ class CsvAnnotationTest {
         assertNotNull(annField)
         assertEquals("active", annField.name)
         assertEquals(3, annField.index)
-        assertEquals(NoopCsvConverter::class, annField.converter)
 
         assertNotNull(annFormat)
         assertEquals(arrayOf("true", "1", "yes", "y").toList(), annFormat.trueValues.toList())

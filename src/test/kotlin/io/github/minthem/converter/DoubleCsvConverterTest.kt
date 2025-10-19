@@ -18,7 +18,8 @@ class DoubleCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val result = DoubleCsvConverter.deserialize(source, Locale.US, "")
+            val converter = DoubleCsvConverter(Locale.US, "")
+            val result = converter.deserialize(source)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }
@@ -31,7 +32,8 @@ class DoubleCsvConverterTest {
             pattern: String,
             expected: Double,
         ) {
-            val result = DoubleCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = DoubleCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
@@ -43,20 +45,23 @@ class DoubleCsvConverterTest {
             locale: Locale,
             pattern: String,
         ) {
-            val result = DoubleCsvConverter.deserialize(strValue, locale, pattern)
+            val converter = DoubleCsvConverter(locale, pattern)
+            val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should trim whitespaces`() {
-            val result = DoubleCsvConverter.deserialize("   1234.56   ", Locale.US, "#.##")
+            val converter = DoubleCsvConverter(Locale.US, "#.##")
+            val result = converter.deserialize("   1234.56   ")
             assertTrue(result.isSuccess)
             assertEquals(1234.56, result.getOrNull())
         }
 
         @Test
         fun `deserialize should accept non-grouped number even if pattern uses grouping`() {
-            val result = DoubleCsvConverter.deserialize("1234.56", Locale.US, "#,##0.##")
+            val converter = DoubleCsvConverter(Locale.US, "#,##0.##")
+            val result = converter.deserialize("1234.56")
             assertTrue(result.isSuccess)
             assertEquals(1234.56, result.getOrNull())
         }
@@ -72,14 +77,16 @@ class DoubleCsvConverterTest {
             pattern: String,
             expected: String,
         ) {
-            val result = DoubleCsvConverter.serialize(value, locale, pattern)
+            val converter = DoubleCsvConverter(locale, pattern)
+            val result = converter.serialize(value)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
         }
 
         @Test
         fun `serialize should return null when value is null`() {
-            val result = DoubleCsvConverter.serialize(null, Locale.US, "")
+            val converter = DoubleCsvConverter(Locale.US, "")
+            val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
         }
