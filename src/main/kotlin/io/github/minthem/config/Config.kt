@@ -7,14 +7,12 @@ import java.util.Locale
  *
  * - delimiter: field separator (e.g., ',' for CSV, '\t' for TSV)
  * - quoteChar: quote character used to wrap and escape fields (e.g., '"')
- * - locale: a hint for value conversions (not used yet in core, reserved)
  * - strictMode: reserved for future conversions; when true, converters should fail fast
  * - nullValue: text to emit when writing null cells
  */
 data class CsvConfig(
     val delimiter: Char = ',',
     val quoteChar: Char = '"',
-    val locale: Locale = Locale.getDefault(),
     val strictMode: Boolean = true,
     val nullValue: String = "",
 ) {

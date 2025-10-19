@@ -15,7 +15,6 @@ class ConfigTest {
             val config = CsvConfig()
             config.delimiter shouldBe ','
             config.quoteChar shouldBe '"'
-            config.locale shouldBe Locale.getDefault()
             config.strictMode shouldBe true
         }
 
@@ -25,12 +24,10 @@ class ConfigTest {
                 CsvConfig(
                     delimiter = ';',
                     quoteChar = '\'',
-                    locale = Locale.JAPAN,
                     strictMode = false,
                 )
             config.delimiter shouldBe ';'
             config.quoteChar shouldBe '\''
-            config.locale shouldBe Locale.JAPAN
             config.strictMode shouldBe false
         }
 
