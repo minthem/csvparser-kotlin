@@ -12,7 +12,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BooleanCsvConverterTest {
-
     @Nested
     inner class CaseSensitiveTest {
         @Nested
@@ -227,4 +226,3 @@ class BooleanCsvConverterTest {
             )
     }
 }
-

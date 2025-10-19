@@ -1,7 +1,5 @@
 package io.github.minthem.config
 
-import java.util.Locale
-
 /**
  * Global CSV/TSV behavior settings used by both reader and writer.
  *

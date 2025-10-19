@@ -5,7 +5,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.Locale
 
 class ConfigTest {
     @Nested

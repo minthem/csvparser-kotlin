@@ -5,19 +5,29 @@ import io.github.minthem.annotation.CsvField
 import io.github.minthem.annotation.CsvFieldFormat
 import io.github.minthem.config.CsvConfig
 import io.github.minthem.config.ReaderConfig
-import io.github.minthem.converter.*
+import io.github.minthem.converter.BigDecimalCsvConverter
+import io.github.minthem.converter.BooleanCsvConverter
+import io.github.minthem.converter.ByteCsvConverter
+import io.github.minthem.converter.CsvConverter
+import io.github.minthem.converter.DoubleCsvConverter
+import io.github.minthem.converter.FloatCsvConverter
+import io.github.minthem.converter.IntCsvConverter
+import io.github.minthem.converter.LocalDateCsvConverter
+import io.github.minthem.converter.LocalDateTimeCsvConverter
+import io.github.minthem.converter.LongCsvConverter
+import io.github.minthem.converter.ShortCsvConverter
+import io.github.minthem.converter.StringCsvConverter
 import io.github.minthem.exception.CsvEntityConstructionException
 import io.github.minthem.exception.CsvEntityMappingException
 import io.github.minthem.exception.CsvFieldConvertException
 import io.github.minthem.exception.CsvFieldIndexOutOfRangeException
 import io.github.minthem.exception.CsvFieldNotFoundInHeaderException
 import io.github.minthem.exception.CsvUnsupportedTypeException
-
 import java.io.Reader
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Locale
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty1
@@ -40,42 +50,44 @@ class CsvEntityReader<T : Any>(
         init()
         val constructor = entityClass.primaryConstructor!!
 
-        val sequence = sequence {
-            for (row in csvReader) {
-                val constructorParams = mutableMapOf<KParameter, Any?>()
+        val sequence =
+            sequence {
+                for (row in csvReader) {
+                    val constructorParams = mutableMapOf<KParameter, Any?>()
 
-                for ((index, pair) in paramMap) {
-                    val (param, converter) = pair
-                    val value = row.getOrNull(index)
-                    val converted = try {
-                        converter.deserialize(value).getOrThrow()
+                    for ((index, pair) in paramMap) {
+                        val (param, converter) = pair
+                        val value = row.getOrNull(index)
+                        val converted =
+                            try {
+                                converter.deserialize(value).getOrThrow()
+                            } catch (e: Exception) {
+                                throw CsvFieldConvertException(
+                                    entityClass,
+                                    param.name,
+                                    csvReader.header()?.getOrNull(index),
+                                    index,
+                                    e,
+                                )
+                            }
+
+                        if (converted == null && param.isOptional) {
+                            continue
+                        }
+                        constructorParams[param] = converted
+                    }
+
+                    try {
+                        yield(constructor.callBy(constructorParams))
                     } catch (e: Exception) {
-                        throw CsvFieldConvertException(
+                        throw CsvEntityConstructionException(
                             entityClass,
-                            param.name,
-                            csvReader.header()?.getOrNull(index),
-                            index,
-                            e
+                            "Constructor invocation failed for parameters: ${constructorParams.keys.map { it.name }}",
+                            e,
                         )
                     }
-
-                    if (converted == null && param.isOptional) {
-                        continue
-                    }
-                    constructorParams[param] = converted
-                }
-
-                try {
-                    yield(constructor.callBy(constructorParams))
-                } catch (e: Exception) {
-                    throw CsvEntityConstructionException(
-                        entityClass,
-                        "Constructor invocation failed for parameters: ${constructorParams.keys.map { it.name }}",
-                        e
-                    )
                 }
             }
-        }
 
         return sequence.iterator()
     }
@@ -91,13 +103,15 @@ class CsvEntityReader<T : Any>(
         val classPropertiesMap = entityClass.memberProperties.associateBy { it.name }
 
         for (parameter in constructor.parameters) {
-            val csvField = getAnnotation<CsvField>(parameter, classPropertiesMap) ?: if (!parameter.isOptional) {
-                throw CsvEntityMappingException(
-                    entityClass, "Parameter ${parameter.name} must be annotated with @CsvField or must be optional."
-                )
-            } else {
-                continue
-            }
+            val csvField =
+                getAnnotation<CsvField>(parameter, classPropertiesMap) ?: if (!parameter.isOptional) {
+                    throw CsvEntityMappingException(
+                        entityClass,
+                        "Parameter ${parameter.name} must be annotated with @CsvField or must be optional.",
+                    )
+                } else {
+                    continue
+                }
 
             val index = resolveHeaderIndex(header, csvField, parameter)
             val converter = resolveConverter(parameter, classPropertiesMap)
@@ -110,7 +124,7 @@ class CsvEntityReader<T : Any>(
 
     private inline fun <reified A : Annotation> getAnnotation(
         parameter: KParameter,
-        propertyMap: Map<String, KProperty1<*, *>>
+        propertyMap: Map<String, KProperty1<*, *>>,
     ): A? {
         val ann = parameter.findAnnotation<A>()
         if (ann != null) return ann
@@ -153,13 +167,17 @@ class CsvEntityReader<T : Any>(
         return index
     }
 
-    private fun resolveConverter(member: KParameter, propertyMap: Map<String, KProperty1<*, *>>): CsvConverter<*> {
+    private fun resolveConverter(
+        member: KParameter,
+        propertyMap: Map<String, KProperty1<*, *>>,
+    ): CsvConverter<*> {
         val fieldFmt = this.getAnnotation<CsvFieldFormat>(member, propertyMap)
-        val locale = if (fieldFmt?.locale.isNullOrBlank()) {
-            Locale.getDefault()
-        } else {
-            Locale.forLanguageTag(fieldFmt.locale)
-        }
+        val locale =
+            if (fieldFmt?.locale.isNullOrBlank()) {
+                Locale.getDefault()
+            } else {
+                Locale.forLanguageTag(fieldFmt.locale)
+            }
 
         return when (member.type.classifier) {
             Int::class -> {
@@ -211,7 +229,7 @@ class CsvEntityReader<T : Any>(
                 throw CsvUnsupportedTypeException(
                     entityClass,
                     member.name,
-                    member.type
+                    member.type,
                 )
             }
         }

@@ -210,8 +210,7 @@ class DoubleCsvConverter(
     }
 }
 
-class StringCsvConverter(
-) : CsvConverter<String> {
+class StringCsvConverter : CsvConverter<String> {
     override fun deserialize(value: String?): Result<String?> =
         runCatching {
             value
@@ -294,14 +293,14 @@ class BooleanCsvConverter(
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
 
-            val normalized = if(caseSensitive) value.trim() else value.trim().lowercase()
+            val normalized = if (caseSensitive) value.trim() else value.trim().lowercase()
 
             if (trueValues.isEmpty() && falseValues.isEmpty()) {
                 return@runCatching normalized.toBooleanStrictOrNull()
             }
 
-            val trueVals = if(caseSensitive) trueValues else trueValues.map { it.lowercase() }
-            val falseVals = if(caseSensitive) falseValues else falseValues.map { it.lowercase() }
+            val trueVals = if (caseSensitive) trueValues else trueValues.map { it.lowercase() }
+            val falseVals = if (caseSensitive) falseValues else falseValues.map { it.lowercase() }
 
             when (normalized) {
                 in trueVals -> true

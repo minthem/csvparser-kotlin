@@ -48,9 +48,9 @@ open class CsvEntityException(
     message: String,
     cause: Throwable? = null,
 ) : CsvException(
-    message,
-    cause,
-)
+        message,
+        cause,
+    )
 
 class CsvEntityMappingException(
     entityClass: KClass<*>,
@@ -70,11 +70,11 @@ class CsvFieldIndexOutOfRangeException(
     index: Int,
     headerSize: Int? = null,
 ) : CsvEntityException(
-    buildString {
-        append("Invalid column index $index for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})")
-        headerSize?.let { append(", header size: $it") }
-    }
-)
+        buildString {
+            append("Invalid column index $index for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})")
+            headerSize?.let { append(", header size: $it") }
+        },
+    )
 
 class CsvFieldConvertException(
     entityClass: KClass<*>,
@@ -82,13 +82,16 @@ class CsvFieldConvertException(
     columnName: String?,
     columnIndex: Int,
     cause: Throwable,
-) : CsvEntityException("Failed to convert column '${columnName ?: "none"}'(index $columnIndex) for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})", cause)
+) : CsvEntityException(
+        "Failed to convert column '${columnName ?: "none"}'(index $columnIndex) for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})",
+        cause,
+    )
 
 class CsvUnsupportedTypeException(
     entityClass: KClass<*>,
     paramName: String?,
-    type: KType
-) : CsvEntityException("Unsupported type '${type}' for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})")
+    type: KType,
+) : CsvEntityException("Unsupported type '$type' for parameter '${paramName ?: "?"}' (entity: ${entityClass.simpleName})")
 
 class CsvEntityConstructionException(
     entityClass: KClass<*>,

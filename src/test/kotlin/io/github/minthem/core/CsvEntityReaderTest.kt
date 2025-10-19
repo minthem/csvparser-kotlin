@@ -5,13 +5,13 @@ import io.github.minthem.annotation.CsvField
 import io.github.minthem.annotation.CsvFieldFormat
 import io.github.minthem.config.CsvConfig
 import io.github.minthem.config.ReaderConfig
-import io.github.minthem.exception.CsvFieldIndexOutOfRangeException
-import io.github.minthem.exception.CsvFieldNotFoundInHeaderException
-import io.github.minthem.exception.CsvUnsupportedTypeException
-import io.github.minthem.exception.CsvLineFormatException
 import io.github.minthem.exception.CsvEntityConstructionException
 import io.github.minthem.exception.CsvEntityMappingException
 import io.github.minthem.exception.CsvFieldConvertException
+import io.github.minthem.exception.CsvFieldIndexOutOfRangeException
+import io.github.minthem.exception.CsvFieldNotFoundInHeaderException
+import io.github.minthem.exception.CsvLineFormatException
+import io.github.minthem.exception.CsvUnsupportedTypeException
 import org.junit.jupiter.api.Test
 import java.io.StringReader
 import java.math.BigDecimal
@@ -21,7 +21,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class CsvEntityReaderTest {
-
     @Test
     fun `should read CSV correctly`() {
         val csv =
@@ -34,12 +33,10 @@ class CsvEntityReaderTest {
         data class Person(
             @CsvField("name")
             val name: String,
-
             @CsvField("age")
             val age: Int,
-
             @CsvField("city")
-            val city: String
+            val city: String,
         )
 
         val reader = CsvEntityReader(Person::class, StringReader(csv), readConfig = ReaderConfig(hasHeader = true))
@@ -62,7 +59,7 @@ class CsvEntityReaderTest {
             @CsvField(index = 1)
             val age: Int,
             @CsvField(index = 2)
-            val city: String
+            val city: String,
         )
 
         val reader = CsvEntityReader(Person::class, StringReader(csv), readConfig = ReaderConfig(hasHeader = false))
@@ -82,14 +79,15 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField("name") val name: String,
-            @CsvField("age") val age: Int
+            @CsvField("age") val age: Int,
         )
 
-        val reader = CsvEntityReader(
-            Person::class,
-            StringReader(csv),
-            readConfig = ReaderConfig(hasHeader = true, skipRows = 1)
-        )
+        val reader =
+            CsvEntityReader(
+                Person::class,
+                StringReader(csv),
+                readConfig = ReaderConfig(hasHeader = true, skipRows = 1),
+            )
         val items = reader.toList()
         assertEquals(Person("Alice", 30), items[0])
     }
@@ -105,7 +103,7 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField("name") val name: String,
-            @CsvField("age") val age: Int
+            @CsvField("age") val age: Int,
         )
 
         val reader = CsvEntityReader(Person::class, StringReader(csv), readConfig = ReaderConfig(hasHeader = true))
@@ -123,14 +121,15 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField("name") val name: String,
-            @CsvField("age") val age: Int
+            @CsvField("age") val age: Int,
         )
 
-        val reader = CsvEntityReader(
-            Person::class,
-            StringReader(csv),
-            readConfig = ReaderConfig(hasHeader = true, ignoreBlankLine = true)
-        )
+        val reader =
+            CsvEntityReader(
+                Person::class,
+                StringReader(csv),
+                readConfig = ReaderConfig(hasHeader = true, ignoreBlankLine = true),
+            )
 
         val items = reader.toList()
         assertEquals(2, items.size)
@@ -149,7 +148,7 @@ class CsvEntityReaderTest {
         data class PersonPropAnnotated(
             @param:CsvField("name") val name: String,
             @param:CsvField("age") val age: Int,
-            @param:CsvField("city") val city: String
+            @param:CsvField("city") val city: String,
         )
 
         val reader =
@@ -177,31 +176,32 @@ class CsvEntityReaderTest {
             @CsvField("date") @CsvFieldFormat(pattern = "yyyy-MM-dd", locale = "en") val date: LocalDate,
             @CsvField("datetime") @CsvFieldFormat(
                 pattern = "yyyy-MM-dd HH:mm:ss",
-                locale = "en"
+                locale = "en",
             ) val datetime: LocalDateTime,
             @CsvField("bool") @BooleanCsvField(
                 trueValues = ["true", "1", "yes"],
-                falseValues = ["false", "0", "no"]
+                falseValues = ["false", "0", "no"],
             ) val bool: Boolean,
-            @CsvField("bigdecimal") @CsvFieldFormat(pattern = "#.#####", locale = "en") val bigdecimal: BigDecimal
+            @CsvField("bigdecimal") @CsvFieldFormat(pattern = "#.#####", locale = "en") val bigdecimal: BigDecimal,
         )
 
         val reader = CsvEntityReader(Rec::class, StringReader(csv), readConfig = ReaderConfig(hasHeader = true))
         val items = reader.toList()
         val actual = items[0]
-        val expected = Rec(
-            10000000,
-            2000000000000,
-            30000,
-            100,
-            1234.567f,
-            12345.6789,
-            "STRING",
-            LocalDate.of(2024, 1, 2),
-            LocalDateTime.of(2024, 1, 2, 13, 45, 0),
-            true,
-            BigDecimal("12345.67890")
-        )
+        val expected =
+            Rec(
+                10000000,
+                2000000000000,
+                30000,
+                100,
+                1234.567f,
+                12345.6789,
+                "STRING",
+                LocalDate.of(2024, 1, 2),
+                LocalDateTime.of(2024, 1, 2, 13, 45, 0),
+                true,
+                BigDecimal("12345.67890"),
+            )
 
         assertEquals(expected, actual)
     }
@@ -226,32 +226,33 @@ class CsvEntityReaderTest {
             @CsvField("date") @CsvFieldFormat(pattern = "yyyy-MM-dd", locale = "en") val date: LocalDate = LocalDate.of(2024, 1, 1),
             @CsvField("datetime") @CsvFieldFormat(
                 pattern = "yyyy-MM-dd HH:mm:ss",
-                locale = "en"
+                locale = "en",
             ) val datetime: LocalDateTime = LocalDateTime.of(2024, 1, 1, 0, 0, 0),
             @CsvField("bool") val bool: Boolean = false,
-            @CsvField("bigdecimal") val bigdecimal: BigDecimal = BigDecimal("99999.99999")
+            @CsvField("bigdecimal") val bigdecimal: BigDecimal = BigDecimal("99999.99999"),
         )
 
         val reader = CsvEntityReader(Rec::class, StringReader(csv), readConfig = ReaderConfig(hasHeader = true))
         val actual = reader.toList()
 
-        val expected = listOf(
-            Rec(
-                int = 10000000,
-                short = 30000,
-                float = 1234.567f,
-                string = "STRING",
-                datetime = LocalDateTime.of(2024, 1, 2, 13, 45, 0),
-                bigdecimal = BigDecimal("12345.67890000000")
-            ),
-            Rec(
-                long = 2000000000000,
-                byte = 100,
-                double = 12345.6789,
-                date = LocalDate.of(2024, 1, 2),
-                bool = true,
-            ),
-        )
+        val expected =
+            listOf(
+                Rec(
+                    int = 10000000,
+                    short = 30000,
+                    float = 1234.567f,
+                    string = "STRING",
+                    datetime = LocalDateTime.of(2024, 1, 2, 13, 45, 0),
+                    bigdecimal = BigDecimal("12345.67890000000"),
+                ),
+                Rec(
+                    long = 2000000000000,
+                    byte = 100,
+                    double = 12345.6789,
+                    date = LocalDate.of(2024, 1, 2),
+                    bool = true,
+                ),
+            )
 
         assertEquals(expected, actual)
     }
@@ -268,15 +269,16 @@ class CsvEntityReaderTest {
         data class Person(
             @CsvField("name") val name: String,
             @CsvField("age") val age: Int,
-            @CsvField("city") val city: String
+            @CsvField("city") val city: String,
         )
 
-        val reader = CsvEntityReader(
-            Person::class,
-            StringReader(tsv),
-            config = CsvConfig(delimiter = '\t'),
-            readConfig = ReaderConfig(hasHeader = true)
-        )
+        val reader =
+            CsvEntityReader(
+                Person::class,
+                StringReader(tsv),
+                config = CsvConfig(delimiter = '\t'),
+                readConfig = ReaderConfig(hasHeader = true),
+            )
 
         val items = reader.toList()
         assertEquals(Person("Alice", 30, "Tokyo"), items[0])
@@ -293,7 +295,7 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField("fullname") val name: String,
-            @CsvField("age") val age: Int
+            @CsvField("age") val age: Int,
         )
 
         assertFailsWith<CsvFieldNotFoundInHeaderException> {
@@ -311,7 +313,7 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField(index = -1) val name: String,
-            @CsvField(index = 1) val age: Int
+            @CsvField(index = 1) val age: Int,
         )
 
         assertFailsWith<CsvFieldIndexOutOfRangeException> {
@@ -331,7 +333,7 @@ class CsvEntityReaderTest {
         class UnsupportedType
 
         data class Person(
-            @CsvField("data") val data: UnsupportedType
+            @CsvField("data") val data: UnsupportedType,
         )
 
         assertFailsWith<CsvUnsupportedTypeException> {
@@ -350,7 +352,7 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField("name") val name: String,
-            val age: Int
+            val age: Int,
         )
 
         assertFailsWith<CsvEntityMappingException> {
@@ -369,7 +371,7 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField("name") val name: String,
-            @CsvField("age") val age: Int
+            @CsvField("age") val age: Int,
         ) {
             init {
                 if (age == 1) error("boom")
@@ -392,7 +394,7 @@ class CsvEntityReaderTest {
 
         data class Person(
             @CsvField("name") val name: String,
-            @CsvField("age") val age: Int
+            @CsvField("age") val age: Int,
         )
 
         assertFailsWith<CsvFieldConvertException> {
