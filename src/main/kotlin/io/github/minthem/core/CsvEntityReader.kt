@@ -35,6 +35,31 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
+/**
+ * Reads CSV/TSV rows and maps them to Kotlin data classes using annotations.
+ *
+ * Mapping rules:
+ * - The target [entityClass] must have a primary constructor.
+ * - Each constructor parameter should be annotated with `@CsvField`; optional parameters may omit it.
+ * - Column resolution prefers index when `@CsvField.index > 0`; otherwise, the header name (or property name when `@CsvField.name` is blank) is used.
+ * - Conversion is controlled by `@CsvFieldFormat` (number/date patterns and locale) and `@BooleanCsvField` for booleans.
+ *
+ * Behavior:
+ * - This class delegates CSV parsing to [CsvReader]; header presence and other read options are defined by [ReaderConfig].
+ * - Iteration is lazy; conversion happens per row while iterating.
+ *
+ * Errors:
+ * - [CsvEntityMappingException] when annotations are missing/invalid or indexes conflict.
+ * - [CsvFieldNotFoundInHeaderException] or [CsvFieldIndexOutOfRangeException] when a column cannot be resolved from header/index.
+ * - [CsvFieldConvertException] when a value fails to convert to the parameter type.
+ * - [CsvEntityConstructionException] when invoking the constructor fails.
+ * - [CsvUnsupportedTypeException] for unsupported parameter types.
+ *
+ * @param entityClass target entity class to instantiate per row
+ * @param reader input character stream
+ * @param config CSV behavior such as delimiter and quote char
+ * @param readConfig reader options such as header handling and skipping rules
+ */
 class CsvEntityReader<T : Any>(
     private val entityClass: KClass<T>,
     reader: Reader,
@@ -46,6 +71,15 @@ class CsvEntityReader<T : Any>(
     private var initialized = false
     private var paramMap: Map<Int, Pair<KParameter, CsvConverter<*>>> = mutableMapOf()
 
+    /**
+     * Returns an iterator that lazily reads CSV rows and constructs entities.
+     *
+     * Initialization occurs on the first call and includes validating annotations,
+     * resolving header/index mapping, and preparing converters.
+     *
+     * Errors from parsing are delegated from [CsvReader]; mapping and conversion
+     * errors are thrown as [io.github.minthem.exception.CsvEntityException] subtypes during iteration.
+     */
     override fun iterator(): Iterator<T> {
         init()
         val constructor = entityClass.primaryConstructor!!
@@ -138,33 +172,48 @@ class CsvEntityReader<T : Any>(
         csvField: CsvField,
         parameter: KParameter,
     ): Int {
-        val name = csvField.name
-
-        val index =
-            if (header != null && name.isNotBlank()) {
-                val idx = header.indexOf(csvField.name)
-                if (idx < 0) {
-                    throw CsvFieldNotFoundInHeaderException(
-                        entityClass,
-                        parameter.name,
-                        csvField.name,
-                    )
-                }
-                idx
-            } else {
-                csvField.index
-            }
-
-        if (index < 0) {
+        val explicitIndex = csvField.index
+        if (explicitIndex < 0) {
             throw CsvFieldIndexOutOfRangeException(
                 entityClass,
                 parameter.name,
-                index,
+                explicitIndex,
                 header?.size,
             )
         }
 
-        return index
+        // index > 0 → 1-based positional
+        if (explicitIndex > 0) {
+            val zeroBased = explicitIndex - 1
+            if (header != null && zeroBased >= header.size) {
+                throw CsvFieldIndexOutOfRangeException(
+                    entityClass,
+                    parameter.name,
+                    explicitIndex,
+                    header.size,
+                )
+            }
+            return zeroBased
+        }
+
+        // index == 0 → resolve by header name
+        if (header == null) {
+            throw CsvEntityMappingException(
+                entityClass,
+                "Header is required to resolve parameter ${parameter.name} by name. Enable ReaderConfig.hasHeader or specify index > 0.",
+            )
+        }
+
+        val effectiveName = csvField.name.ifBlank { parameter.name ?: "" }
+        val idx = header.indexOf(effectiveName)
+        if (idx < 0) {
+            throw CsvFieldNotFoundInHeaderException(
+                entityClass,
+                parameter.name,
+                effectiveName,
+            )
+        }
+        return idx
     }
 
     private fun resolveConverter(

@@ -89,6 +89,11 @@ val tsvReader = CsvReader(StringReader(tsv), CsvConfig(delimiter = '\t'), Reader
 - CsvWriter(out: Appendable, config: CsvConfig, writeConfig: WriterConfig = WriterConfig())
   - writeHeader(header: List<String>)
   - writeRow(row: Row)
+- CsvEntityReader<T : Any>(entityClass: KClass<T>, reader: Reader, config: CsvConfig = CsvConfig(), readConfig: ReaderConfig = ReaderConfig()) : Iterable<T>
+  - Iterate to get entity instances mapped from rows
+- CsvEntityWriter<T : Any>(entityClass: KClass<T>, out: Appendable, config: CsvConfig, writeConfig: WriterConfig = WriterConfig())
+  - writeHeader() — Emits a header from annotations
+  - writeRow(entity: T) — Writes one entity
 
 ## Configuration
 - CsvConfig
@@ -145,6 +150,66 @@ println(out.toString())
 // name,age\n
 // Alice,24\n
 // Bob,NULL\n
+```
+
+## Entity mapping (CsvEntityReader / CsvEntityWriter)
+
+You can bind CSV columns to Kotlin data classes using annotations. This is convenient when you want type-safe conversion and clear column mapping.
+
+### Define an entity
+
+```kotlin
+data class Person(
+    @CsvField(index = 1) val id: Long,
+    @CsvField(name = "full_name") val name: String,
+    @CsvField val age: Int?,
+    @CsvFieldFormat(pattern = "yyyy-MM-dd") @CsvField val birth: LocalDate,
+    @CsvFieldFormat(pattern = "yyyy-MM-dd HH:mm:ss") @CsvField val lastLogin: LocalDateTime?,
+    @BooleanCsvField(trueValues = ["Y", "Yes"], falseValues = ["N", "No"]) @CsvField val active: Boolean,
+    @CsvFieldFormat(pattern = "#,##0.###") @CsvField val balance: BigDecimal,
+)
+```
+
+Notes:
+- When `index > 0`, the column is taken from that 1-based index.
+- When `index == -1` (default), the column is resolved by header name. If `name` is blank, the parameter/property name is used.
+
+### Read entities
+
+```kotlin
+val csv = """
+id,full_name,age,birth,lastLogin,active,balance
+1,Alice,30,1994-01-01,2024-01-02 10:20:30,Y,1,234.5
+2,Bob,,1990-05-12,,N,0
+""".trimIndent()
+
+val reader = CsvEntityReader(
+    Person::class,
+    StringReader(csv),
+    CsvConfig(),
+    ReaderConfig(hasHeader = true)
+)
+
+for (p in reader) {
+    println(p)
+}
+```
+
+### Write entities
+
+```kotlin
+val people = listOf(
+    Person(1, "Alice", 30, LocalDate.parse("1994-01-01"), LocalDateTime.parse("2024-01-02T10:20:30"), true, BigDecimal("1234.5")),
+    Person(2, "Bob", null, LocalDate.parse("1990-05-12"), null, false, BigDecimal.ZERO),
+)
+
+val out = StringBuilder()
+val writer = CsvEntityWriter(Person::class, out, CsvConfig(nullValue = ""), WriterConfig(WriterConfig.LineSeparator.LF))
+
+writer.writeHeader() // id,full_name,age,birth,lastLogin,active,balance
+people.forEach { writer.writeRow(it) }
+
+println(out.toString())
 ```
 
 ## Development
