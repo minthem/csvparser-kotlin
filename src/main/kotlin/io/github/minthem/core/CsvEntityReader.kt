@@ -78,7 +78,7 @@ class CsvEntityReader<T : Any>(
      * resolving header/index mapping, and preparing converters.
      *
      * Errors from parsing are delegated from [CsvReader]; mapping and conversion
-     * errors are thrown as [CsvEntityException] subtypes during iteration.
+     * errors are thrown as [io.github.minthem.exception.CsvEntityException] subtypes during iteration.
      */
     override fun iterator(): Iterator<T> {
         init()
