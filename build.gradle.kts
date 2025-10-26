@@ -3,6 +3,7 @@ import com.vanniktech.maven.publish.KotlinJvm
 import kotlinx.kover.gradle.plugin.dsl.AggregationType
 import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
 import kotlinx.kover.gradle.plugin.dsl.GroupingEntityType
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
@@ -14,6 +15,12 @@ plugins {
     id("org.jetbrains.dokka") version "1.9.20"
 }
 
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
+}
+
 group = "io.github.minthem"
 version = System.getenv("CI_TAG") ?: "0.0.1-SNAPSHOT"
 
@@ -23,6 +30,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
@@ -40,6 +48,7 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.koverHtmlReport)
 }
 
 mavenPublishing {

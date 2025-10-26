@@ -5,7 +5,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.Locale
 
 class ConfigTest {
     @Nested
@@ -15,7 +14,6 @@ class ConfigTest {
             val config = CsvConfig()
             config.delimiter shouldBe ','
             config.quoteChar shouldBe '"'
-            config.locale shouldBe Locale.getDefault()
             config.strictMode shouldBe true
         }
 
@@ -25,12 +23,10 @@ class ConfigTest {
                 CsvConfig(
                     delimiter = ';',
                     quoteChar = '\'',
-                    locale = Locale.JAPAN,
                     strictMode = false,
                 )
             config.delimiter shouldBe ';'
             config.quoteChar shouldBe '\''
-            config.locale shouldBe Locale.JAPAN
             config.strictMode shouldBe false
         }
 
