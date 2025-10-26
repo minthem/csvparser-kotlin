@@ -186,17 +186,18 @@ class CsvEntityReader<T : Any>(
                 }
                 idx
             } else {
-                csvField.index
-            }
+                val idx = csvField.index
+                if (idx <= 0) {
+                    throw CsvFieldIndexOutOfRangeException(
+                        entityClass,
+                        parameter.name,
+                        idx,
+                        header?.size,
+                    )
+                }
 
-        if (index < 0) {
-            throw CsvFieldIndexOutOfRangeException(
-                entityClass,
-                parameter.name,
-                index,
-                header?.size,
-            )
-        }
+                idx - 1
+            }
 
         return index
     }

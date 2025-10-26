@@ -54,11 +54,11 @@ class CsvEntityReaderTest {
             """.trimIndent()
 
         data class Person(
-            @CsvField(index = 0)
-            val name: String,
             @CsvField(index = 1)
-            val age: Int,
+            val name: String,
             @CsvField(index = 2)
+            val age: Int,
+            @CsvField(index = 3)
             val city: String,
         )
 
