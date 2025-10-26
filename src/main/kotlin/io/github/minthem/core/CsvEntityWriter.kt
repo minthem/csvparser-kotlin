@@ -30,6 +30,32 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
+/**
+ * Writes Kotlin data classes to CSV/TSV using annotations on properties.
+ *
+ * Mapping rules:
+ * - The target [entityClass] must have a primary constructor and properties matching its parameters.
+ * - Properties annotated with `@CsvField` are written. Column order is determined by
+ *   `@CsvField.index` when greater than 0; otherwise, remaining properties are placed sequentially.
+ * - Column names use `@CsvField.name` when provided; otherwise, the property name.
+ * - Values are converted to text via type-specific converters. You can control formatting with
+ *   `@CsvFieldFormat` (numbers/dates) and `@BooleanCsvField`.
+ *
+ * Behavior:
+ * - You may call [writeHeader] to output a header based on resolved column names.
+ * - Use [writeRow] to serialize an entity instance as one CSV line.
+ *
+ * Errors:
+ * - [io.github.minthem.exception.CsvEntityMappingException] when indexes are duplicated/invalid
+ *   or no columns are found.
+ * - [io.github.minthem.exception.CsvFieldConvertException] when a value cannot be converted.
+ * - [io.github.minthem.exception.CsvUnsupportedTypeException] for unsupported property types.
+ *
+ * @param entityClass target entity class whose annotated properties are written
+ * @param out destination appendable
+ * @param config CSV behavior such as delimiter, quote char, and nullValue
+ * @param writeConfig writer options such as line separator
+ */
 class CsvEntityWriter<T : Any>(
     private val entityClass: KClass<T>,
     private val out: Appendable,
@@ -43,6 +69,14 @@ class CsvEntityWriter<T : Any>(
         buildHeaderIndexMap()
     }
 
+    /**
+     * Writes a header row using resolved column names.
+     *
+     * Column names come from `@CsvField.name` when non-blank, otherwise the property name.
+     * For gaps with no mapped property at an index, a default name like `Column_1` is used.
+     *
+     * Delegates to [CsvWriter.writeHeader]. See it for header validation rules.
+     */
     fun writeHeader() {
         val header: List<String> =
             valueProperties.mapIndexed { index, cell ->
@@ -52,6 +86,15 @@ class CsvEntityWriter<T : Any>(
         writer.writeHeader(header)
     }
 
+    /**
+     * Writes one entity instance as a CSV row.
+     *
+     * For each property annotated with `@CsvField`, the value is read and converted
+     * according to the resolved converter. Null values are emitted as [CsvConfig.nullValue].
+     *
+     * @throws io.github.minthem.exception.CsvFieldConvertException when conversion fails
+     * @throws io.github.minthem.exception.CsvUnsupportedTypeException when the property type is unsupported
+     */
     fun writeRow(entity: T) {
         val values: List<String?> =
             valueProperties.mapIndexed { idx, cell ->
