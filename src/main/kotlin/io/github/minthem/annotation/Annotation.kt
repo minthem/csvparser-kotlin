@@ -1,5 +1,6 @@
 package io.github.minthem.annotation
 
+// FIXME: index start from 1
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
 annotation class CsvField(
