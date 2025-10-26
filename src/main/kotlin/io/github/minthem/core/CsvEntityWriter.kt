@@ -141,12 +141,12 @@ class CsvEntityWriter<T : Any>(
                     )
                 }
                 headerIndexMap[index] = cell
-            } else if (index == -1) {
+            } else if (index == 0) {
                 unIndexProperties.add(cell)
             } else {
                 throw CsvEntityMappingException(
                     entityClass,
-                    "Invalid index $index: ${param.name} must be positive or -1",
+                    "Invalid index $index: ${param.name} must be non-negative (0 for auto, >0 for explicit position)",
                 )
             }
         }

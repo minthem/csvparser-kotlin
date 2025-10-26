@@ -40,7 +40,7 @@ class CsvAnnotationTest {
 
         assertNotNull(annField)
         assertEquals("date", annField.name)
-        assertEquals(-1, annField.index)
+        assertEquals(0, annField.index)
 
         assertNotNull(annFormat)
         assertEquals("yyyy-MM-dd", annFormat.pattern)

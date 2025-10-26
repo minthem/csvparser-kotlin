@@ -295,9 +295,9 @@ class CsvEntityWriterTest {
     }
 
     @Test
-    fun `should throw CsvEntityMappingException for less than equal 0 CsvField index`() {
+    fun `should throw CsvEntityMappingException for less than 0 CsvField index`() {
         data class Person(
-            @CsvField(index = 0) val id: String,
+            @CsvField(index = -1) val id: String,
         )
 
         val writer =

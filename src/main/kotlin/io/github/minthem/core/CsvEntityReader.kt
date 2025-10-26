@@ -172,34 +172,48 @@ class CsvEntityReader<T : Any>(
         csvField: CsvField,
         parameter: KParameter,
     ): Int {
-        val name = csvField.name
+        val explicitIndex = csvField.index
+        if (explicitIndex < 0) {
+            throw CsvFieldIndexOutOfRangeException(
+                entityClass,
+                parameter.name,
+                explicitIndex,
+                header?.size,
+            )
+        }
 
-        val index =
-            if (header != null && name.isNotBlank()) {
-                val idx = header.indexOf(csvField.name)
-                if (idx < 0) {
-                    throw CsvFieldNotFoundInHeaderException(
-                        entityClass,
-                        parameter.name,
-                        csvField.name,
-                    )
-                }
-                idx
-            } else {
-                val idx = csvField.index
-                if (idx <= 0) {
-                    throw CsvFieldIndexOutOfRangeException(
-                        entityClass,
-                        parameter.name,
-                        idx,
-                        header?.size,
-                    )
-                }
-
-                idx - 1
+        // index > 0 → 1-based positional
+        if (explicitIndex > 0) {
+            val zeroBased = explicitIndex - 1
+            if (header != null && zeroBased >= header.size) {
+                throw CsvFieldIndexOutOfRangeException(
+                    entityClass,
+                    parameter.name,
+                    explicitIndex,
+                    header.size,
+                )
             }
+            return zeroBased
+        }
 
-        return index
+        // index == 0 → resolve by header name
+        if (header == null) {
+            throw CsvEntityMappingException(
+                entityClass,
+                "Header is required to resolve parameter ${parameter.name} by name. Enable ReaderConfig.hasHeader or specify index > 0.",
+            )
+        }
+
+        val effectiveName = csvField.name.ifBlank { parameter.name ?: "" }
+        val idx = header.indexOf(effectiveName)
+        if (idx < 0) {
+            throw CsvFieldNotFoundInHeaderException(
+                entityClass,
+                parameter.name,
+                effectiveName,
+            )
+        }
+        return idx
     }
 
     private fun resolveConverter(

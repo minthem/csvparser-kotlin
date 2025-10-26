@@ -5,7 +5,7 @@ package io.github.minthem.annotation
  *
  * Rules:
  * - When [index] > 0, the column is resolved by 1-based index.
- * - When [index] == -1 (default), the column is resolved by header name. The
+ * - When [index] == 0 (default), the column is resolved by header name. The
  *   name is [name] when non-blank; otherwise the parameter/property name.
  * - [name] is ignored when [index] > 0.
  */
@@ -13,7 +13,7 @@ package io.github.minthem.annotation
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
 annotation class CsvField(
     val name: String = "",
-    val index: Int = -1,
+    val index: Int = 0,
 )
 
 /**
