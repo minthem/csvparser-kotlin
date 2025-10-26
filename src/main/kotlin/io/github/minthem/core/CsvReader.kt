@@ -26,7 +26,7 @@ class CsvReader(
     private val readConfig: ReaderConfig = ReaderConfig(),
 ) : Iterable<Row> {
     private val lineExtractor = LineExtractor(reader, config.quoteChar, lineBufferSize = 8192)
-    private val tokenizer = Tokenizer(config.delimiter, config.quoteChar)
+    private val formatter = CsvLineFormatter(config.delimiter, config.quoteChar)
 
     private var header: List<String>? = null
     private var headerMap: Map<String, Int>? = null
@@ -63,7 +63,7 @@ class CsvReader(
                     try {
                         val cells =
                             try {
-                                tokenizer.tokenize(line)
+                                formatter.split(line)
                             } catch (e: CsvFormatInternalException) {
                                 throw CsvFormatException(e.message ?: "Invalid CSV(TSV) Format", lineNo, e.position)
                             }
@@ -115,7 +115,7 @@ class CsvReader(
                     currentReadLineNum,
                 )
 
-            val cells = tokenizer.tokenize(headerLine)
+            val cells = formatter.split(headerLine)
             val (hdr, indexMap) = validateAndBuildHeader(cells)
             header = hdr
             headerMap = indexMap

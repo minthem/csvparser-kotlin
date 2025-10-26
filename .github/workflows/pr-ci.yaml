@@ -39,8 +39,7 @@ jobs:
 
       - name: Build + Test + Coverage Verify
         run: |
-          ./gradlew --no-daemon --stacktrace --info \
-            clean build check
+          ./gradlew --info clean build check
 
       - name: Publish Test Reports
         if: always()
@@ -84,8 +83,7 @@ jobs:
 
       - name: Run linters (adjust if tools are present)
         run: |
-          ./gradlew --no-daemon --stacktrace \
-            ktlintCheck
+          ./gradlew --info ktlintCheck
 
       - name: Upload Lint Reports
         if: always()
@@ -117,7 +115,7 @@ jobs:
 
       - name: Assemble Jars
         run: |
-          ./gradlew --no-daemon --stacktrace assemble
+          ./gradlew --info assemble
 
       - name: Verify jars (manifest/classes present)
         run: |
