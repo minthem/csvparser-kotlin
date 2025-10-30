@@ -10,7 +10,7 @@ import java.util.Locale
 abstract class NumericConverter<T : Number>(
     locale: Locale,
     format: String,
-) : AbstractCsvConverter<T>(locale, format) {
+) : LocalizedCsvConverter<T>(locale, format) {
     protected abstract fun cast(value: BigDecimal): T
 
     override fun deserialize(value: String?): Result<T?> {

@@ -8,7 +8,7 @@ import java.util.Locale
 class LocalDateCsvConverter(
     locale: Locale = Locale.getDefault(),
     pattern: String = "YYYY-MM-dd",
-) : AbstractCsvConverter<LocalDate>(locale, pattern) {
+) : LocalizedCsvConverter<LocalDate>(locale, pattern) {
     override fun deserialize(value: String?): Result<LocalDate?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null
@@ -27,7 +27,7 @@ class LocalDateCsvConverter(
 class LocalDateTimeCsvConverter(
     locale: Locale = Locale.getDefault(),
     pattern: String = "YYYY-MM-dd HH:mm:ss",
-) : AbstractCsvConverter<LocalDateTime>(locale, pattern) {
+) : LocalizedCsvConverter<LocalDateTime>(locale, pattern) {
     override fun deserialize(value: String?): Result<LocalDateTime?> {
         return runCatching {
             if (value.isNullOrBlank()) return@runCatching null

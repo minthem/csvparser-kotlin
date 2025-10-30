@@ -8,7 +8,7 @@ interface CsvConverter<T> {
     fun serialize(value: T?): Result<String?>
 }
 
-abstract class AbstractCsvConverter<T>(
+abstract class LocalizedCsvConverter<T>(
     protected val locale: Locale,
     protected val pattern: String,
 ) : CsvConverter<T>
