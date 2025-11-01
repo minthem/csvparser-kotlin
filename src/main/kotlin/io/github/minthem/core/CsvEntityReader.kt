@@ -221,100 +221,31 @@ class CsvEntityReader<T : Any>(
         propertyMap: Map<String, KProperty1<*, *>>,
     ): CsvConverter<*> {
         val fieldFmt = this.getAnnotation<CsvFieldFormat>(member, propertyMap)
-        val locale =
-            if (fieldFmt?.locale.isNullOrBlank()) {
-                Locale.getDefault()
-            } else {
-                Locale.forLanguageTag(fieldFmt.locale)
-            }
+        val locale = fieldFmt?.locale?.let { Locale.forLanguageTag(it) }
 
-        return when (member.type.classifier) {
-            Int::class -> {
-                IntCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "#")
-                    .build()
-            }
+        if (member.type.classifier == String::class) {
+            return StringCsvConverter()
+        }
+        if (member.type.classifier == Boolean::class) {
+            val boolFmt = getAnnotation<BooleanCsvField>(member, propertyMap) ?: BooleanCsvField()
+            return BooleanCsvConverter
+                .Builder()
+                .trueValues(boolFmt.trueValues.toList())
+                .falseValues(boolFmt.falseValues.toList())
+                .caseSensitive(!boolFmt.ignoreCase)
+                .build()
+        }
 
-            Long::class -> {
-                LongCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "#")
-                    .build()
-            }
-
-            Short::class -> {
-                ShortCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "#")
-                    .build()
-            }
-
-            Byte::class -> {
-                ByteCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "#")
-                    .build()
-            }
-
-            Float::class -> {
-                FloatCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "#.###")
-                    .build()
-            }
-
-            Double::class -> {
-                DoubleCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "#.######")
-                    .build()
-            }
-
-            String::class -> {
-                StringCsvConverter()
-            }
-
-            BigDecimal::class -> {
-                BigDecimalCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "#.###########")
-                    .build()
-            }
-
-            LocalDate::class -> {
-                LocalDateCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "YYYY-MM-dd")
-                    .build()
-            }
-
-            LocalDateTime::class -> {
-                LocalDateTimeCsvConverter
-                    .Builder()
-                    .locale(locale)
-                    .pattern(fieldFmt?.pattern ?: "YYYY-MM-dd HH:mm:ss")
-                    .build()
-            }
-
-            Boolean::class -> {
-                val boolFmt = getAnnotation<BooleanCsvField>(member, propertyMap) ?: BooleanCsvField()
-                BooleanCsvConverter
-                    .Builder()
-                    .trueValues(boolFmt.trueValues.toList())
-                    .falseValues(boolFmt.falseValues.toList())
-                    .caseSensitive(!boolFmt.ignoreCase)
-                    .build()
-            }
-
+        var builder = when (member.type.classifier) {
+            Int::class -> IntCsvConverter.Builder()
+            Long::class -> LongCsvConverter.Builder()
+            Short::class -> ShortCsvConverter.Builder()
+            Byte::class -> ByteCsvConverter.Builder()
+            Float::class -> FloatCsvConverter.Builder()
+            Double::class -> DoubleCsvConverter.Builder()
+            BigDecimal::class -> BigDecimalCsvConverter.Builder()
+            LocalDate::class -> LocalDateCsvConverter.Builder()
+            LocalDateTime::class -> LocalDateTimeCsvConverter.Builder()
             else -> {
                 throw CsvUnsupportedTypeException(
                     entityClass,
@@ -323,5 +254,15 @@ class CsvEntityReader<T : Any>(
                 )
             }
         }
+
+        if(locale != null) {
+            builder = builder.locale(locale)
+        }
+
+        if (fieldFmt != null) {
+            builder = builder.pattern(fieldFmt.pattern)
+        }
+
+        return builder.build()
     }
 }
