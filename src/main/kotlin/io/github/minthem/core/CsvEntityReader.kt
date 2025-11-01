@@ -1,22 +1,9 @@
 package io.github.minthem.core
 
-import io.github.minthem.annotation.BooleanCsvField
 import io.github.minthem.annotation.CsvField
-import io.github.minthem.annotation.CsvFieldFormat
 import io.github.minthem.config.CsvConfig
 import io.github.minthem.config.ReaderConfig
-import io.github.minthem.converter.BigDecimalCsvConverter
-import io.github.minthem.converter.BooleanCsvConverter
-import io.github.minthem.converter.ByteCsvConverter
 import io.github.minthem.converter.CsvConverter
-import io.github.minthem.converter.DoubleCsvConverter
-import io.github.minthem.converter.FloatCsvConverter
-import io.github.minthem.converter.IntCsvConverter
-import io.github.minthem.converter.LocalDateCsvConverter
-import io.github.minthem.converter.LocalDateTimeCsvConverter
-import io.github.minthem.converter.LongCsvConverter
-import io.github.minthem.converter.ShortCsvConverter
-import io.github.minthem.converter.StringCsvConverter
 import io.github.minthem.exception.CsvEntityConstructionException
 import io.github.minthem.exception.CsvEntityMappingException
 import io.github.minthem.exception.CsvFieldConvertException
@@ -24,13 +11,8 @@ import io.github.minthem.exception.CsvFieldIndexOutOfRangeException
 import io.github.minthem.exception.CsvFieldNotFoundInHeaderException
 import io.github.minthem.exception.CsvUnsupportedTypeException
 import java.io.Reader
-import java.math.BigDecimal
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.Locale
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty1
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
@@ -68,8 +50,7 @@ class CsvEntityReader<T : Any>(
 ) : Iterable<T> {
     private val csvReader = CsvReader(reader, config, readConfig)
 
-    private var initialized = false
-    private var paramMap: Map<Int, Pair<KParameter, CsvConverter<*>>> = mutableMapOf()
+    private val paramMap: Map<Int, Pair<KParameter, CsvConverter<*>>> by lazy { init() }
 
     /**
      * Returns an iterator that lazily reads CSV rows and constructs entities.
@@ -126,45 +107,43 @@ class CsvEntityReader<T : Any>(
         return sequence.iterator()
     }
 
-    private fun init() {
-        if (initialized) return
-
+    private fun init(): Map<Int, Pair<KParameter, CsvConverter<*>>> {
+        val parameterMap = mutableMapOf<Int, Pair<KParameter, CsvConverter<*>>>()
         val header = csvReader.header()
         val constructor =
             entityClass.primaryConstructor
                 ?: throw CsvEntityMappingException(entityClass, "Entity class must have primary constructor.")
 
-        val classPropertiesMap = entityClass.memberProperties.associateBy { it.name }
+        val propertyMap = entityClass.memberProperties.associateBy { it.name }
 
         for (parameter in constructor.parameters) {
-            val csvField =
-                getAnnotation<CsvField>(parameter, classPropertiesMap) ?: if (!parameter.isOptional) {
-                    throw CsvEntityMappingException(
-                        entityClass,
-                        "Parameter ${parameter.name} must be annotated with @CsvField or must be optional.",
-                    )
-                } else {
+            parameter.findAnnotation<CsvField>()?.let {
+                val index = resolveHeaderIndex(header, it, parameter)
+                val converter = CsvConverterHelper.resolve(entityClass, parameter)
+                parameterMap[index] = (parameter to converter)
+                continue
+            }
+
+            propertyMap[parameter.name]?.let { prop ->
+                prop.findAnnotation<CsvField>()?.let { anno ->
+                    val index = resolveHeaderIndex(header, anno, parameter)
+                    val converter = CsvConverterHelper.resolve(entityClass, prop)
+                    parameterMap[index] = (parameter to converter)
                     continue
                 }
+            }
 
-            val index = resolveHeaderIndex(header, csvField, parameter)
-            val converter = resolveConverter(parameter, classPropertiesMap)
-
-            paramMap = paramMap + (index to (parameter to converter))
+            if (!parameter.isOptional) {
+                throw CsvEntityMappingException(
+                    entityClass,
+                    "Parameter ${parameter.name} must be annotated with @CsvField or must be optional.",
+                )
+            } else {
+                continue
+            }
         }
 
-        initialized = true
-    }
-
-    private inline fun <reified A : Annotation> getAnnotation(
-        parameter: KParameter,
-        propertyMap: Map<String, KProperty1<*, *>>,
-    ): A? {
-        val ann = parameter.findAnnotation<A>()
-        if (ann != null) return ann
-
-        val property = propertyMap[parameter.name]
-        return property?.findAnnotation<A>()
+        return parameterMap
     }
 
     private fun resolveHeaderIndex(
@@ -214,73 +193,5 @@ class CsvEntityReader<T : Any>(
             )
         }
         return idx
-    }
-
-    private fun resolveConverter(
-        member: KParameter,
-        propertyMap: Map<String, KProperty1<*, *>>,
-    ): CsvConverter<*> {
-        val fieldFmt = this.getAnnotation<CsvFieldFormat>(member, propertyMap)
-        val locale =
-            if (fieldFmt?.locale.isNullOrBlank()) {
-                Locale.getDefault()
-            } else {
-                Locale.forLanguageTag(fieldFmt.locale)
-            }
-
-        return when (member.type.classifier) {
-            Int::class -> {
-                IntCsvConverter(locale, fieldFmt?.pattern ?: "#")
-            }
-
-            Long::class -> {
-                LongCsvConverter(locale, fieldFmt?.pattern ?: "#")
-            }
-
-            Short::class -> {
-                ShortCsvConverter(locale, fieldFmt?.pattern ?: "#")
-            }
-
-            Byte::class -> {
-                ByteCsvConverter(locale, fieldFmt?.pattern ?: "#")
-            }
-
-            Float::class -> {
-                FloatCsvConverter(locale, fieldFmt?.pattern ?: "#.###")
-            }
-
-            Double::class -> {
-                DoubleCsvConverter(locale, fieldFmt?.pattern ?: "#.######")
-            }
-
-            String::class -> {
-                StringCsvConverter()
-            }
-
-            BigDecimal::class -> {
-                BigDecimalCsvConverter(locale, fieldFmt?.pattern ?: "#.###########")
-            }
-
-            LocalDate::class -> {
-                LocalDateCsvConverter(locale, fieldFmt?.pattern ?: "YYYY-MM-dd")
-            }
-
-            LocalDateTime::class -> {
-                LocalDateTimeCsvConverter(locale, fieldFmt?.pattern ?: "YYYY-MM-dd HH:mm:ss")
-            }
-
-            Boolean::class -> {
-                val boolFmt = getAnnotation<BooleanCsvField>(member, propertyMap) ?: BooleanCsvField()
-                BooleanCsvConverter(boolFmt.trueValues.toList(), boolFmt.falseValues.toList())
-            }
-
-            else -> {
-                throw CsvUnsupportedTypeException(
-                    entityClass,
-                    member.name,
-                    member.type,
-                )
-            }
-        }
     }
 }

@@ -17,7 +17,12 @@ class LocalDateTimeCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val converter = LocalDateTimeCsvConverter(Locale.getDefault(), "yyyy-MM-dd'T'HH:mm:ss")
+            val converter =
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(Locale.getDefault())
+                    .pattern("yyyy-MM-dd'T'HH:mm:ss")
+                    .build()
             val result = converter.deserialize(source)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
@@ -25,7 +30,12 @@ class LocalDateTimeCsvConverterTest {
 
         @Test
         fun `deserialize valid date-time using default locale`() {
-            val converter = LocalDateTimeCsvConverter(Locale.getDefault(), "yyyy-MM-dd'T'HH:mm:ss")
+            val converter =
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(Locale.getDefault())
+                    .pattern("yyyy-MM-dd'T'HH:mm:ss")
+                    .build()
             val result = converter.deserialize("2025-10-11T14:30:00")
             assertTrue(result.isSuccess)
             assertEquals(LocalDateTime.of(2025, 10, 11, 14, 30, 0), result.getOrNull())
@@ -33,7 +43,12 @@ class LocalDateTimeCsvConverterTest {
 
         @Test
         fun `deserialize valid date-time with specific locale`() {
-            val converter = LocalDateTimeCsvConverter(Locale.GERMANY, "dd.MM.yyyy HH:mm:ss")
+            val converter =
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(Locale.GERMANY)
+                    .pattern("dd.MM.yyyy HH:mm:ss")
+                    .build()
             val result = converter.deserialize("11.10.2025 14:30:00")
             assertTrue(result.isSuccess)
             assertEquals(LocalDateTime.of(2025, 10, 11, 14, 30, 0), result.getOrNull())
@@ -41,7 +56,12 @@ class LocalDateTimeCsvConverterTest {
 
         @Test
         fun `deserialize should fail on invalid pattern`() {
-            val converter = LocalDateTimeCsvConverter(Locale.getDefault(), "invalid-pattern")
+            val converter =
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(Locale.getDefault())
+                    .pattern("invalid-pattern")
+                    .build()
             val result = converter.deserialize("2025-10-11T14:30:00")
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is IllegalArgumentException)
@@ -49,7 +69,12 @@ class LocalDateTimeCsvConverterTest {
 
         @Test
         fun `deserialize should fail on invalid date-time`() {
-            val converter = LocalDateTimeCsvConverter(Locale.getDefault(), "yyyy-MM-dd'T'HH:mm:ss")
+            val converter =
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(Locale.getDefault())
+                    .pattern("yyyy-MM-dd'T'HH:mm:ss")
+                    .build()
             val result = converter.deserialize("11-10-2025 14:30:00")
             assertTrue(result.isFailure)
             assertTrue(result.exceptionOrNull() is DateTimeParseException)
@@ -60,7 +85,12 @@ class LocalDateTimeCsvConverterTest {
     inner class SerializeTest {
         @Test
         fun `serialize valid date-time with default locale`() {
-            val converter = LocalDateTimeCsvConverter(Locale.getDefault(), "yyyy-MM-dd'T'HH:mm:ss")
+            val converter =
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(Locale.getDefault())
+                    .pattern("yyyy-MM-dd'T'HH:mm:ss")
+                    .build()
             val value = LocalDateTime.of(2025, 10, 11, 14, 30, 0)
             val result = converter.serialize(value)
             assertTrue(result.isSuccess)
@@ -69,7 +99,12 @@ class LocalDateTimeCsvConverterTest {
 
         @Test
         fun `serialize should return null when value is null`() {
-            val converter = LocalDateTimeCsvConverter(Locale.getDefault(), "yyyy-MM-dd'T'HH:mm:ss")
+            val converter =
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(Locale.getDefault())
+                    .pattern("yyyy-MM-dd'T'HH:mm:ss")
+                    .build()
             val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())

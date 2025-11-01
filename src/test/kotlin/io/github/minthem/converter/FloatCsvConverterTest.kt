@@ -18,7 +18,12 @@ class FloatCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val converter = FloatCsvConverter(Locale.US, "")
+            val converter =
+                FloatCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("")
+                    .build()
             val result = converter.deserialize(source)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
@@ -32,7 +37,12 @@ class FloatCsvConverterTest {
             pattern: String,
             expected: Float,
         ) {
-            val converter = FloatCsvConverter(locale, pattern)
+            val converter =
+                FloatCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
@@ -45,14 +55,24 @@ class FloatCsvConverterTest {
             locale: Locale,
             pattern: String,
         ) {
-            val converter = FloatCsvConverter(locale, pattern)
+            val converter =
+                FloatCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should trim whitespaces`() {
-            val converter = FloatCsvConverter(Locale.US, "#.##")
+            val converter =
+                FloatCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#.##")
+                    .build()
             val result = converter.deserialize("   1234.56   ")
             assertTrue(result.isSuccess)
             assertEquals(1234.56f, result.getOrNull())
@@ -60,7 +80,12 @@ class FloatCsvConverterTest {
 
         @Test
         fun `deserialize should accept non-grouped number even if pattern uses grouping`() {
-            val converter = FloatCsvConverter(Locale.US, "#,##0.##")
+            val converter =
+                FloatCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#,##0.##")
+                    .build()
             val result = converter.deserialize("1234.56")
             assertTrue(result.isSuccess)
             assertEquals(1234.56f, result.getOrNull())
@@ -77,7 +102,12 @@ class FloatCsvConverterTest {
             pattern: String,
             expected: String,
         ) {
-            val converter = FloatCsvConverter(locale, pattern)
+            val converter =
+                FloatCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.serialize(value)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
@@ -85,7 +115,12 @@ class FloatCsvConverterTest {
 
         @Test
         fun `serialize should return null when value is null`() {
-            val converter = FloatCsvConverter(Locale.US, "")
+            val converter =
+                FloatCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("")
+                    .build()
             val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())

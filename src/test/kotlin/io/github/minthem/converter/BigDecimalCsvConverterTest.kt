@@ -22,7 +22,12 @@ class BigDecimalCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val converter = BigDecimalCsvConverter(Locale.US, "")
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("")
+                    .build()
             val result1 = converter.deserialize(source)
             assertTrue(result1.isSuccess)
             assertNull(result1.getOrNull())
@@ -36,7 +41,12 @@ class BigDecimalCsvConverterTest {
             pattern: String,
             expected: BigDecimal,
         ) {
-            val converter = BigDecimalCsvConverter(locale, pattern)
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
@@ -49,28 +59,48 @@ class BigDecimalCsvConverterTest {
             locale: Locale,
             pattern: String,
         ) {
-            val converter = BigDecimalCsvConverter(locale, pattern)
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should fail with incorrect locale specific format`() {
-            val converter = BigDecimalCsvConverter(Locale.GERMANY, "#,##0.##")
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.GERMANY)
+                    .pattern("#,##0.##")
+                    .build()
             val result = converter.deserialize("12,345.67")
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should fail when separators don't match locale`() {
-            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.##")
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#,##0.##")
+                    .build()
             val result = converter.deserialize("12.345,67")
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should trim whitespaces`() {
-            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.###")
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#,##0.###")
+                    .build()
             val result = converter.deserialize("   12,345.678   ")
             assertTrue(result.isSuccess)
             assertEquals(BigDecimal("12345.678"), result.getOrNull())
@@ -83,7 +113,12 @@ class BigDecimalCsvConverterTest {
             pattern: String,
             expected: BigDecimal,
         ) {
-            val converter = BigDecimalCsvConverter(Locale.US, pattern)
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern(pattern)
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
@@ -91,7 +126,12 @@ class BigDecimalCsvConverterTest {
 
         @Test
         fun `deserialize should accept non-grouped number even if pattern uses grouping`() {
-            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.###")
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#,##0.###")
+                    .build()
             val result = converter.deserialize("12345.678")
             assertTrue(result.isSuccess)
             assertEquals(BigDecimal("12345.678"), result.getOrNull())
@@ -108,7 +148,12 @@ class BigDecimalCsvConverterTest {
             pattern: String,
             expected: String,
         ) {
-            val converter = BigDecimalCsvConverter(locale, pattern)
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.serialize(bdValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
@@ -116,7 +161,12 @@ class BigDecimalCsvConverterTest {
 
         @Test
         fun `serialize should format BigDecimal with a pattern`() {
-            val converter = BigDecimalCsvConverter(Locale.US, "#,##0.00")
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#,##0.00")
+                    .build()
             val result = converter.serialize(BigDecimal("12345.678"))
             assertTrue(result.isSuccess)
             assertEquals("12,345.68", result.getOrNull())
@@ -124,7 +174,12 @@ class BigDecimalCsvConverterTest {
 
         @Test
         fun `serialize should return null when value is null`() {
-            val converter = BigDecimalCsvConverter(Locale.US, "")
+            val converter =
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("")
+                    .build()
             val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
