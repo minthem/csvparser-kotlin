@@ -19,7 +19,12 @@ class BooleanCsvConverterTest {
             @ParameterizedTest
             @NullAndEmptySource
             fun `deserialize should return null for null or blank inputs`(source: String?) {
-                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"))
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(listOf("yes", "true"))
+                        .falseValues(listOf("no", "false"))
+                        .build()
                 val result = converter.deserialize(source)
                 assertTrue(result.isSuccess)
                 assertNull(result.getOrNull())
@@ -33,7 +38,12 @@ class BooleanCsvConverterTest {
                 falseValues: List<String>,
                 expected: Boolean,
             ) {
-                val converter = BooleanCsvConverter(trueValues, falseValues)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(trueValues)
+                        .falseValues(falseValues)
+                        .build()
                 val result = converter.deserialize(input)
                 assertTrue(result.isSuccess)
                 assertEquals(expected, result.getOrNull())
@@ -41,7 +51,12 @@ class BooleanCsvConverterTest {
 
             @Test
             fun `deserialize should use default exact tokens when none provided`() {
-                val converter = BooleanCsvConverter(emptyList(), emptyList())
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(emptyList())
+                        .falseValues(emptyList())
+                        .build()
                 val t = converter.deserialize("true")
                 val f = converter.deserialize("false")
                 assertTrue(t.isSuccess)
@@ -52,7 +67,12 @@ class BooleanCsvConverterTest {
 
             @Test
             fun `deserialize should fail when input not in either set`() {
-                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"))
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(listOf("yes", "true"))
+                        .falseValues(listOf("no", "false"))
+                        .build()
                 val result = converter.deserialize("maybe")
                 assertTrue(result.isFailure)
             }
@@ -68,7 +88,12 @@ class BooleanCsvConverterTest {
                 falseValues: List<String>,
                 expected: String,
             ) {
-                val converter = BooleanCsvConverter(trueValues, falseValues)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(trueValues)
+                        .falseValues(falseValues)
+                        .build()
                 val result = converter.serialize(value)
                 assertTrue(result.isSuccess)
                 assertEquals(expected, result.getOrNull())
@@ -76,7 +101,12 @@ class BooleanCsvConverterTest {
 
             @Test
             fun `serialize should return null when value is null`() {
-                val converter = BooleanCsvConverter(emptyList(), emptyList())
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(emptyList())
+                        .falseValues(emptyList())
+                        .build()
                 val result = converter.serialize(null)
                 assertTrue(result.isSuccess)
                 assertNull(result.getOrNull())
@@ -91,7 +121,13 @@ class BooleanCsvConverterTest {
             @ParameterizedTest
             @NullAndEmptySource
             fun `deserialize should return null for null or blank inputs`(source: String?) {
-                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"), false)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(listOf("yes", "true"))
+                        .falseValues(listOf("no", "false"))
+                        .caseSensitive(false)
+                        .build()
                 val result = converter.deserialize(source)
                 assertTrue(result.isSuccess)
                 assertNull(result.getOrNull())
@@ -105,7 +141,13 @@ class BooleanCsvConverterTest {
                 falseValues: List<String>,
                 expected: Boolean,
             ) {
-                val converter = BooleanCsvConverter(trueValues, falseValues, false)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(trueValues)
+                        .falseValues(falseValues)
+                        .caseSensitive(false)
+                        .build()
                 val result = converter.deserialize(input)
                 assertTrue(result.isSuccess)
                 assertEquals(expected, result.getOrNull())
@@ -113,7 +155,13 @@ class BooleanCsvConverterTest {
 
             @Test
             fun `deserialize should accept default tokens regardless of case when none provided`() {
-                val converter = BooleanCsvConverter(emptyList(), emptyList(), false)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(emptyList())
+                        .falseValues(emptyList())
+                        .caseSensitive(false)
+                        .build()
                 val t = converter.deserialize("TrUe")
                 val f = converter.deserialize("FaLsE")
                 assertTrue(t.isSuccess)
@@ -124,7 +172,13 @@ class BooleanCsvConverterTest {
 
             @Test
             fun `deserialize should fail when input not in either set`() {
-                val converter = BooleanCsvConverter(listOf("yes", "true"), listOf("no", "false"), false)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(listOf("yes", "true"))
+                        .falseValues(listOf("no", "false"))
+                        .caseSensitive(false)
+                        .build()
                 val result = converter.deserialize("maybe")
                 assertTrue(result.isFailure)
             }
@@ -140,7 +194,13 @@ class BooleanCsvConverterTest {
                 falseValues: List<String>,
                 expected: String,
             ) {
-                val converter = BooleanCsvConverter(trueValues, falseValues, false)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(trueValues)
+                        .falseValues(falseValues)
+                        .caseSensitive(false)
+                        .build()
                 val result = converter.serialize(value)
                 assertTrue(result.isSuccess)
                 assertEquals(expected, result.getOrNull())
@@ -148,7 +208,13 @@ class BooleanCsvConverterTest {
 
             @Test
             fun `serialize should return null when value is null`() {
-                val converter = BooleanCsvConverter(emptyList(), emptyList(), false)
+                val converter =
+                    BooleanCsvConverter
+                        .Builder()
+                        .trueValues(emptyList())
+                        .falseValues(emptyList())
+                        .caseSensitive(false)
+                        .build()
                 val result = converter.serialize(null)
                 assertTrue(result.isSuccess)
                 assertNull(result.getOrNull())

@@ -1,6 +1,6 @@
 package io.github.minthem.converter
 
-class BooleanCsvConverter(
+class BooleanCsvConverter private constructor(
     private val trueValues: List<String> = listOf("true", "yes", "ok"),
     private val falseValues: List<String> = listOf("false", "no", "bad"),
     private val caseSensitive: Boolean = true,
@@ -35,5 +35,28 @@ class BooleanCsvConverter(
 
             if (value) trueValues.first() else falseValues.first()
         }
+    }
+
+    class Builder {
+        private var trueValues: List<String> = listOf("true", "yes", "ok")
+        private var falseValues: List<String> = listOf("false", "no", "bad")
+        private var caseSensitive: Boolean = true
+
+        fun trueValues(trueValues: List<String>): Builder {
+            this.trueValues = trueValues
+            return this
+        }
+
+        fun falseValues(falseValues: List<String>): Builder {
+            this.falseValues = falseValues
+            return this
+        }
+
+        fun caseSensitive(caseSensitive: Boolean): Builder {
+            this.caseSensitive = caseSensitive
+            return this
+        }
+
+        fun build(): BooleanCsvConverter = BooleanCsvConverter(trueValues, falseValues, caseSensitive)
     }
 }

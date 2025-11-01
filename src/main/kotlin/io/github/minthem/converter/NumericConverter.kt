@@ -60,51 +60,75 @@ abstract class NumericConverter<T : Number>(
     }
 }
 
-class IntCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "#",
+class IntCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : NumericConverter<Int>(locale, pattern) {
     override fun cast(value: BigDecimal): Int = value.setScale(0, RoundingMode.DOWN).intValueExact()
+
+    class Builder : LocalizedCsvConverterBuilder<Int>("#") {
+        override fun build(): IntCsvConverter = IntCsvConverter(locale, pattern)
+    }
 }
 
-class LongCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "#",
+class LongCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : NumericConverter<Long>(locale, pattern) {
     override fun cast(value: BigDecimal): Long = value.setScale(0, RoundingMode.DOWN).longValueExact()
+
+    class Builder : LocalizedCsvConverterBuilder<Long>("#") {
+        override fun build(): LongCsvConverter = LongCsvConverter(locale, pattern)
+    }
 }
 
-class ShortCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "#",
+class ShortCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : NumericConverter<Short>(locale, pattern) {
     override fun cast(value: BigDecimal): Short = value.setScale(0, RoundingMode.DOWN).shortValueExact()
+
+    class Builder : LocalizedCsvConverterBuilder<Short>("#") {
+        override fun build(): ShortCsvConverter = ShortCsvConverter(locale, pattern)
+    }
 }
 
-class ByteCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "#",
+class ByteCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : NumericConverter<Byte>(locale, pattern) {
     override fun cast(value: BigDecimal): Byte = value.setScale(0, RoundingMode.DOWN).byteValueExact()
+
+    class Builder : LocalizedCsvConverterBuilder<Byte>("#") {
+        override fun build(): ByteCsvConverter = ByteCsvConverter(locale, pattern)
+    }
 }
 
-class FloatCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "#.###",
+class FloatCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : NumericConverter<Float>(locale, pattern) {
     override fun cast(value: BigDecimal): Float = value.toFloat()
+
+    class Builder : LocalizedCsvConverterBuilder<Float>("#.###") {
+        override fun build(): FloatCsvConverter = FloatCsvConverter(locale, pattern)
+    }
 }
 
-class DoubleCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "#.######",
+class DoubleCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : NumericConverter<Double>(locale, pattern) {
     override fun cast(value: BigDecimal): Double = value.toDouble()
+
+    class Builder : LocalizedCsvConverterBuilder<Double>("#.######") {
+        override fun build(): DoubleCsvConverter = DoubleCsvConverter(locale, pattern)
+    }
 }
 
-class BigDecimalCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "#.###########",
+class BigDecimalCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : NumericConverter<BigDecimal>(locale, pattern) {
     override fun cast(value: BigDecimal): BigDecimal = value
 
@@ -117,5 +141,9 @@ class BigDecimalCsvConverter(
                 value.toPlainString()
             }
         }
+    }
+
+    class Builder : LocalizedCsvConverterBuilder<BigDecimal>("#.###########") {
+        override fun build(): BigDecimalCsvConverter = BigDecimalCsvConverter(locale, pattern)
     }
 }

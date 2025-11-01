@@ -19,7 +19,12 @@ class ByteCsvConverterTest {
         @ParameterizedTest
         @NullAndEmptySource
         fun `deserialize should return null for null or blank inputs`(source: String?) {
-            val converter = ByteCsvConverter(Locale.US, "")
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("")
+                    .build()
             val result = converter.deserialize(source)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())
@@ -33,7 +38,12 @@ class ByteCsvConverterTest {
             pattern: String,
             expected: Byte,
         ) {
-            val converter = ByteCsvConverter(locale, pattern)
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isSuccess)
             assertEquals(expected, result.getOrNull())
@@ -46,7 +56,12 @@ class ByteCsvConverterTest {
             locale: Locale,
             pattern: String,
         ) {
-            val converter = ByteCsvConverter(locale, pattern)
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(pattern)
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
@@ -54,14 +69,24 @@ class ByteCsvConverterTest {
         @ParameterizedTest
         @ValueSource(strings = ["128", "-129"])
         fun `deserialize should fail for out of range values`(strValue: String) {
-            val converter = ByteCsvConverter(Locale.US, "#")
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#")
+                    .build()
             val result = converter.deserialize(strValue)
             assertTrue(result.isFailure)
         }
 
         @Test
         fun `deserialize should trim whitespaces`() {
-            val converter = ByteCsvConverter(Locale.US, "#")
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#")
+                    .build()
             val result = converter.deserialize("   127   ")
             assertTrue(result.isSuccess)
             assertEquals(127.toByte(), result.getOrNull())
@@ -69,7 +94,12 @@ class ByteCsvConverterTest {
 
         @Test
         fun `deserialize should accept non-grouped number even if pattern uses grouping`() {
-            val converter = ByteCsvConverter(Locale.US, "#,##")
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("#,##")
+                    .build()
             val result = converter.deserialize("127")
             assertTrue(result.isSuccess)
             assertEquals(127.toByte(), result.getOrNull())
@@ -81,7 +111,12 @@ class ByteCsvConverterTest {
         @ParameterizedTest
         @MethodSource("io.github.minthem.converter.ByteCsvConverterTest#serializeProvider")
         fun `serialize should return plain string`() {
-            val converter = ByteCsvConverter(Locale.US, "")
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("")
+                    .build()
             val result = converter.serialize(127)
             assertTrue(result.isSuccess)
             assertEquals("127", result.getOrNull())
@@ -89,7 +124,12 @@ class ByteCsvConverterTest {
 
         @Test
         fun `serialize should return null when value is null`() {
-            val converter = ByteCsvConverter(Locale.US, "")
+            val converter =
+                ByteCsvConverter
+                    .Builder()
+                    .locale(Locale.US)
+                    .pattern("")
+                    .build()
             val result = converter.serialize(null)
             assertTrue(result.isSuccess)
             assertNull(result.getOrNull())

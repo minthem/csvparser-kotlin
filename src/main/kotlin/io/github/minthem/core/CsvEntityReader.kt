@@ -230,27 +230,51 @@ class CsvEntityReader<T : Any>(
 
         return when (member.type.classifier) {
             Int::class -> {
-                IntCsvConverter(locale, fieldFmt?.pattern ?: "#")
+                IntCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "#")
+                    .build()
             }
 
             Long::class -> {
-                LongCsvConverter(locale, fieldFmt?.pattern ?: "#")
+                LongCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "#")
+                    .build()
             }
 
             Short::class -> {
-                ShortCsvConverter(locale, fieldFmt?.pattern ?: "#")
+                ShortCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "#")
+                    .build()
             }
 
             Byte::class -> {
-                ByteCsvConverter(locale, fieldFmt?.pattern ?: "#")
+                ByteCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "#")
+                    .build()
             }
 
             Float::class -> {
-                FloatCsvConverter(locale, fieldFmt?.pattern ?: "#.###")
+                FloatCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "#.###")
+                    .build()
             }
 
             Double::class -> {
-                DoubleCsvConverter(locale, fieldFmt?.pattern ?: "#.######")
+                DoubleCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "#.######")
+                    .build()
             }
 
             String::class -> {
@@ -258,20 +282,37 @@ class CsvEntityReader<T : Any>(
             }
 
             BigDecimal::class -> {
-                BigDecimalCsvConverter(locale, fieldFmt?.pattern ?: "#.###########")
+                BigDecimalCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "#.###########")
+                    .build()
             }
 
             LocalDate::class -> {
-                LocalDateCsvConverter(locale, fieldFmt?.pattern ?: "YYYY-MM-dd")
+                LocalDateCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "YYYY-MM-dd")
+                    .build()
             }
 
             LocalDateTime::class -> {
-                LocalDateTimeCsvConverter(locale, fieldFmt?.pattern ?: "YYYY-MM-dd HH:mm:ss")
+                LocalDateTimeCsvConverter
+                    .Builder()
+                    .locale(locale)
+                    .pattern(fieldFmt?.pattern ?: "YYYY-MM-dd HH:mm:ss")
+                    .build()
             }
 
             Boolean::class -> {
                 val boolFmt = getAnnotation<BooleanCsvField>(member, propertyMap) ?: BooleanCsvField()
-                BooleanCsvConverter(boolFmt.trueValues.toList(), boolFmt.falseValues.toList())
+                BooleanCsvConverter
+                    .Builder()
+                    .trueValues(boolFmt.trueValues.toList())
+                    .falseValues(boolFmt.falseValues.toList())
+                    .caseSensitive(!boolFmt.ignoreCase)
+                    .build()
             }
 
             else -> {

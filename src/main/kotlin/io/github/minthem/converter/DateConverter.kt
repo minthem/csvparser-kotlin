@@ -5,9 +5,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-class LocalDateCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "YYYY-MM-dd",
+class LocalDateCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : LocalizedCsvConverter<LocalDate>(locale, pattern) {
     override fun deserialize(value: String?): Result<LocalDate?> {
         return runCatching {
@@ -22,11 +22,15 @@ class LocalDateCsvConverter(
             DateTimeFormatter.ofPattern(pattern, locale).format(value)
         }
     }
+
+    class Builder : LocalizedCsvConverterBuilder<LocalDate>("YYYY-MM-dd") {
+        override fun build(): LocalDateCsvConverter = LocalDateCsvConverter(locale, pattern)
+    }
 }
 
-class LocalDateTimeCsvConverter(
-    locale: Locale = Locale.getDefault(),
-    pattern: String = "YYYY-MM-dd HH:mm:ss",
+class LocalDateTimeCsvConverter private constructor(
+    locale: Locale,
+    pattern: String,
 ) : LocalizedCsvConverter<LocalDateTime>(locale, pattern) {
     override fun deserialize(value: String?): Result<LocalDateTime?> {
         return runCatching {
@@ -40,5 +44,9 @@ class LocalDateTimeCsvConverter(
             if (value == null) return@runCatching null
             DateTimeFormatter.ofPattern(pattern, locale).format(value)
         }
+    }
+
+    class Builder : LocalizedCsvConverterBuilder<LocalDateTime>("YYYY-MM-dd") {
+        override fun build(): LocalDateTimeCsvConverter = LocalDateTimeCsvConverter(locale, pattern)
     }
 }
