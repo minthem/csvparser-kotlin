@@ -133,7 +133,7 @@ class CsvEntityReader<T : Any>(
                 }
             }
 
-            if(!parameter.isOptional){
+            if (!parameter.isOptional) {
                 throw CsvEntityMappingException(
                     entityClass,
                     "Parameter ${parameter.name} must be annotated with @CsvField or must be optional.",

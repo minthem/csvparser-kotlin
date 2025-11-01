@@ -27,20 +27,21 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
 
 internal object CsvConverterHelper {
+    fun resolve(
+        clazz: KClass<*>,
+        field: KParameter,
+    ): CsvConverter<*> = buildConverter(clazz, field.type, field, field.name)
 
-    fun resolve(clazz: KClass<*>, field: KParameter): CsvConverter<*> {
-        return buildConverter(clazz, field.type, field, field.name)
-    }
-
-    fun resolve(clazz: KClass<*>, field: KProperty1<*, *>): CsvConverter<*> {
-        return buildConverter(clazz, field.returnType, field, field.name)
-    }
+    fun resolve(
+        clazz: KClass<*>,
+        field: KProperty1<*, *>,
+    ): CsvConverter<*> = buildConverter(clazz, field.returnType, field, field.name)
 
     private fun buildConverter(
         clazz: KClass<*>,
         type: KType,
         field: KAnnotatedElement,
-        fieldName: String?
+        fieldName: String?,
     ): CsvConverter<*> {
         val fieldFmt = field.findAnnotation<CsvFieldFormat>()
 
@@ -57,24 +58,25 @@ internal object CsvConverterHelper {
                 .build()
         }
 
-        var builder = when (type.classifier) {
-            Int::class -> IntCsvConverter.Builder()
-            Long::class -> LongCsvConverter.Builder()
-            Short::class -> ShortCsvConverter.Builder()
-            Byte::class -> ByteCsvConverter.Builder()
-            Float::class -> FloatCsvConverter.Builder()
-            Double::class -> DoubleCsvConverter.Builder()
-            BigDecimal::class -> BigDecimalCsvConverter.Builder()
-            LocalDate::class -> LocalDateCsvConverter.Builder()
-            LocalDateTime::class -> LocalDateTimeCsvConverter.Builder()
-            else -> {
-                throw CsvUnsupportedTypeException(
-                    clazz,
-                    fieldName,
-                    type,
-                )
+        var builder =
+            when (type.classifier) {
+                Int::class -> IntCsvConverter.Builder()
+                Long::class -> LongCsvConverter.Builder()
+                Short::class -> ShortCsvConverter.Builder()
+                Byte::class -> ByteCsvConverter.Builder()
+                Float::class -> FloatCsvConverter.Builder()
+                Double::class -> DoubleCsvConverter.Builder()
+                BigDecimal::class -> BigDecimalCsvConverter.Builder()
+                LocalDate::class -> LocalDateCsvConverter.Builder()
+                LocalDateTime::class -> LocalDateTimeCsvConverter.Builder()
+                else -> {
+                    throw CsvUnsupportedTypeException(
+                        clazz,
+                        fieldName,
+                        type,
+                    )
+                }
             }
-        }
 
         fieldFmt?.locale?.let { builder = builder.locale(Locale.forLanguageTag(it)) }
 
@@ -84,5 +86,4 @@ internal object CsvConverterHelper {
 
         return builder.build()
     }
-
 }

@@ -158,9 +158,7 @@ class CsvEntityWriter<T : Any>(
         return CsvConverterAdapter(headerName, prop, converter as CsvConverter<U>)
     }
 
-    private fun resolveConverter(property: KProperty1<*, *>): CsvConverter<*> {
-        return CsvConverterHelper.resolve(entityClass, property)
-    }
+    private fun resolveConverter(property: KProperty1<*, *>): CsvConverter<*> = CsvConverterHelper.resolve(entityClass, property)
 }
 
 private class CsvConverterAdapter<T>(
