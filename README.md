@@ -3,7 +3,7 @@
 A simple and practical CSV/TSV reader & writer for Kotlin. It covers everyday use cases: headers, automatic handling of line breaks, quoting and escaping, distinguishing empty cells (null) from empty strings, skipping rows and invalid lines, etc.
 
 - Language/Target: Kotlin/JVM (Kotlin 2.2, JVM 21)
-- Package: `io.github.minthem`
+- Package: `io.github.minthem.csvparser`
 - License: MIT
 
 ## Features
@@ -46,10 +46,10 @@ Alice,30,Tokyo
 Bob,25,Osaka
 """.trimIndent()
 
-val reader = io.github.minthem.core.CsvReader(
-    java.io.StringReader(csv),
-    io.github.minthem.config.CsvConfig(),
-    io.github.minthem.config.ReaderConfig(hasHeader = true)
+val reader = CsvReader(
+    StringReader(csv),
+    CsvConfig(),
+    ReaderConfig(hasHeader = true)
 )
 println(reader.header()) // [name, age, city]
 
@@ -136,15 +136,15 @@ val tsvReader = CsvReader(StringReader(tsv), CsvConfig(delimiter = '\t'), Reader
 
 ```kotlin
 val out = StringBuilder()
-val writer = io.github.minthem.core.CsvWriter(
+val writer = CsvWriter(
     out,
-    io.github.minthem.config.CsvConfig(nullValue = "NULL"),
-    io.github.minthem.config.WriterConfig(lineSeparator = io.github.minthem.config.WriterConfig.LineSeparator.LF)
+    CsvConfig(nullValue = "NULL"),
+    WriterConfig(lineSeparator = WriterConfig.LineSeparator.LF)
 )
 
 writer.writeHeader(listOf("name", "age"))
-writer.writeRow(io.github.minthem.core.Row(listOf("Alice", "24"), mapOf("name" to 0, "age" to 1)))
-writer.writeRow(io.github.minthem.core.Row(listOf("Bob", null), mapOf("name" to 0, "age" to 1)))
+writer.writeRow(Row(listOf("Alice", "24"), mapOf("name" to 0, "age" to 1)))
+writer.writeRow(Row(listOf("Bob", null), mapOf("name" to 0, "age" to 1)))
 
 println(out.toString())
 // name,age\n
